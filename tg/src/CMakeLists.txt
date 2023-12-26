@@ -16,11 +16,11 @@ find_package(Boost COMPONENTS serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-target_compile_options(ws PUBLIC
+target_compile_options(ch PUBLIC
 	$<$<CONFIG:Release>:-O3 -std=c++17>
 	$<$<CONFIG:Debug>:-g -std=c++17>
 	)
-target_compile_options(ma PUBLIC
+target_compile_options(ne PUBLIC
 	$<$<CONFIG:Release>:-O3 -std=c++17>
 	$<$<CONFIG:Debug>:-g -std=c++17>
 	)
