@@ -186,6 +186,9 @@ int tokenize(io& f, vector<sentence>& c) {
 #endif
 	for (auto i = 0; i < f.head.size()-1; ++i) {
 		c[i] = lm.parse(f, i);
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
 		progress("tokenizing",0,(double)i/f.head.size());
 	}
 	// indexing
@@ -197,6 +200,8 @@ int tokenize(io& f, vector<sentence>& c) {
 			}
 		}
 	}
+	int rpad = 2*PBWIDTH;
+	printf("\r%*s", rpad,"");
 	d->save(wdic.c_str());
 	return 0;
 }
@@ -251,12 +256,17 @@ int init(nio& f, vector<nsentence>& corpus) {
 				}
 			}
 			j += thread;
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
 			progress("init", NNPYLM_EPOCH, (double)i/NNPYLM_EPOCH);
 		}
 		chunker.estimate(1);
 		if (i)
 			chunker.poisson_correction(1000);
 	}
+	int rpad = 2*PBWIDTH;
+	printf("\r%*s", rpad, "");
 	return 0;
 }
 
@@ -313,6 +323,9 @@ int mcmc(nio& f, vector<nsentence>& corpus) {
 				}
 			}
 			j += thread;
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
 			progress("epoch",i, (double)j/corpus.size());
 		}
 		lm.estimate(1);

@@ -222,6 +222,9 @@ int mcmc(io& f, vector<sentence>& corpus) {
 				}
 			}
 			j += thread;
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
 			progress("epoch", i, (double)j/corpus.size());
 		}
 		// estimate hyperparameter

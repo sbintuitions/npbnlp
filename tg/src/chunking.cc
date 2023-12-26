@@ -223,6 +223,9 @@ int mcmc() {
 				}
 			}
 			j += thread;
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
 			progress(i, (double)j/corpus.size());
 		}
 		chunker.estimate(20);
