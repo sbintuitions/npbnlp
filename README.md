@@ -8,5 +8,7 @@ unsupervised learning libraries for NLP
 
 ## cmake & make
 `% cd npbnlp`
+
 `% cmake -DCMAKE_CXX_COMPILER=<g++ path> -DLIBRARY_PATH=<icu_library_path> -DCPLUS_INCLUDE_PATH=<icu_include_path> .`
+
 `% make`
