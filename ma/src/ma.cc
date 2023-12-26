@@ -20,7 +20,7 @@ static int m = 20;
 static int l = 2;
 static int k = 10;
 static int K = 50; // base measure for transition
-static int thread = 4;
+static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
 static int vocab = 50000;
@@ -50,7 +50,7 @@ void usage(int argc, char **argv) {
 	cout << "-l, --pos_order=int(default 2)\n";
 	cout << "-k, --pos=int(default 50)\n";
 	cout << "-e, --epoch=int(default 500)\n";
-	cout << "-t, --thread=int(default 4)\n";
+	cout << "-t, --threads=int(default 4)\n";
 	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
 	exit(1);
 }
@@ -75,8 +75,8 @@ int read_long_param(const char *opt, const char *arg) {
 		k = min(k, K);
 	} else if (check(opt, "epoch")) {
 		epoch = atoi(arg);
-	} else if (check(opt, "thread")) {
-		thread = atoi(arg);
+	} else if (check(opt, "threads")) {
+		threads = atoi(arg);
 	} else if (check(opt, "dump")) {
 		dmp = atoi(arg);
 	} else if (check(opt, "vocab")) {
@@ -105,7 +105,7 @@ int read_param(int argc, char **argv) {
 			{"pos_order", required_argument, 0, 0},
 			{"pos", required_argument, 0, 0},
 			{"epoch", required_argument, 0, 0},
-			{"thread", required_argument, 0, 0},
+			{"threads", required_argument, 0, 0},
 			{"dump", required_argument, 0, 0},
 			{"vocab", required_argument, 0, 0},
 			{0, 0, 0, 0}
@@ -137,7 +137,7 @@ int read_param(int argc, char **argv) {
 				epoch = atoi(optarg);
 				break;
 			case 't':
-				thread = atoi(optarg);
+				threads = atoi(optarg);
 				break;
 			case 'v':
 				vocab = atoi(optarg);
@@ -170,7 +170,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 	lm.set(vocab, K);
 	lm.slice(a, b);
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #endif
 	int rid[corpus.size()] = {0};
 	rd::shuffle(rid, corpus.size());
@@ -186,7 +186,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 		int j = 0;
 		while (j < corpus.size()) {
 			// remove
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size())
 					lm.remove(corpus[rd[j+t]]);
 			}
@@ -204,7 +204,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 				}
 			}
 #else
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size()) {
 					try {
 						sentence s = lm.sample(f, rd[j+t]);
@@ -216,12 +216,12 @@ int mcmc(io& f, vector<sentence>& corpus) {
 			}
 #endif
 			// add
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size()) {
 					lm.add(corpus[rd[j+t]]);
 				}
 			}
-			j += thread;
+			j += threads;
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
@@ -271,7 +271,7 @@ int init(io& f, vector<sentence>& corpus) {
 	npylm lm(n, m);
 	lm.set(vocab);
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #endif
 	for (int i = 0; i < NPYLM_EPOCH; ++i) {
 		int rd[corpus.size()] = {0};
@@ -279,7 +279,7 @@ int init(io& f, vector<sentence>& corpus) {
 		int j = 0;
 		while (j < corpus.size()) {
 			if (i > 0)
-				for (auto t = 0; t < thread; ++t) {
+				for (auto t = 0; t < threads; ++t) {
 					if (j+t < corpus.size())
 						lm.remove(corpus[rd[j+t]]);
 				}
@@ -296,7 +296,7 @@ int init(io& f, vector<sentence>& corpus) {
 					}
 			}
 #else
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size())
 					try {
 						sentence s = lm.sample(f, rd[j+t]);
@@ -306,10 +306,10 @@ int init(io& f, vector<sentence>& corpus) {
 					}
 			}
 #endif
-			for (auto t = 0; t < thread; ++t)
+			for (auto t = 0; t < threads; ++t)
 				if (j+t < corpus.size())
 					lm.add(corpus[rd[j+t]]);
-			j += thread;
+			j += threads;
 			progress("init", NPYLM_EPOCH, (double)i/NPYLM_EPOCH);
 
 		}

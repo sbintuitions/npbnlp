@@ -14,7 +14,7 @@ using namespace npbnlp;
 using namespace std;
 
 static int n = 2;
-static int thread = 4;
+static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
 static string train;
@@ -40,7 +40,7 @@ void usage(int argc, char **argv) {
 	cout << "[options]\n";
 	cout << "-n, --order=int(default 2)\n";
 	cout << "-e, --epoch=int(default 500)\n";
-	cout << "-t, --thread=int(default 4)\n";
+	cout << "-t, --threads=int(default 4)\n";
 	exit(1);
 }
 
@@ -60,8 +60,8 @@ int read_long_param(const char *opt, const char *arg) {
 		n = atoi(arg);
 	} else if (check(opt, "epoch")) {
 		epoch = atoi(arg);
-	} else if (check(opt, "thread")) {
-		thread = atoi(arg);
+	} else if (check(opt, "threads")) {
+		threads = atoi(arg);
 	} else if (check(opt, "dump")) {
 		dmp = atoi(arg);
 	} else if (check(opt, "tokenizer")) {
@@ -88,7 +88,7 @@ int read_param(int argc, char **argv) {
 			{"wdic", required_argument, 0,0},
 			{"order", required_argument, 0,0},
 			{"epoch", required_argument, 0,0},
-			{"thread", required_argument, 0,0},
+			{"threads", required_argument, 0,0},
 			{"dump", required_argument, 0,0},
 			{"tokenizer", required_argument, 0,0},
 			{0, 0, 0, 0}
@@ -110,7 +110,7 @@ int read_param(int argc, char **argv) {
 				epoch = atoi(optarg);
 				break;
 			case 't':
-				thread = atoi(optarg);
+				threads = atoi(optarg);
 				break;
 			case '?':
 			default:
@@ -142,7 +142,7 @@ int tokenize(io& f, vector<sentence>& c) {
 	lm.load(tokenizer.c_str());
 	c.resize(f.head.size()-1);
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
 	for (auto i = 0; i < f.head.size()-1; ++i) {
@@ -179,7 +179,7 @@ int mcmc() {
 	lm.load(tokenizer.c_str());
 	nnpylm chunker(n, lm.n(), lm.m());
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #endif
 	for (auto i = 0; i < epoch; ++i) {
 		int rd[corpus.size()] = {0};
@@ -187,7 +187,7 @@ int mcmc() {
 		int j = 0;
 		while (j < corpus.size()) {
 			if (i > 0) {
-				for (auto t = 0; t < thread; ++t) {
+				for (auto t = 0; t < threads; ++t) {
 					if (j+t < corpus.size())
 						chunker.remove(corpus[rd[j+t]]);
 				}
@@ -206,7 +206,7 @@ int mcmc() {
 				}
 			}
 #else
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size()) {
 					try {
 						nsentence s = chunker.sample(f, rd[j+t]);
@@ -217,12 +217,12 @@ int mcmc() {
 				}
 			}
 #endif
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size()) {
 					chunker.add(corpus[rd[j+t]]);
 				}
 			}
-			j += thread;
+			j += threads;
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
@@ -256,7 +256,7 @@ int parse() {
 	nnpylm chunker(n, lm.n(), lm.m());
 	chunker.load(model.c_str());
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
 	for (auto i = 0; i < f.head.size()-1; ++i) {

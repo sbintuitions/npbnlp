@@ -17,7 +17,7 @@ using namespace npbnlp;
 
 static int n = 2;
 static int m = 20;
-static int thread = 4;
+static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
 static int vocab = 5000;
@@ -43,7 +43,7 @@ void usage(int argc, char **argv) {
 	cout << "-n, --word_order=int(default 2)\n";
 	cout << "-m, --letter_order=int(default 20)\n";
 	cout << "-e, --epoch=int(default 500)\n";
-	cout << "-t, --thread=int(default 4)\n";
+	cout << "-t, --threads=int(default 4)\n";
 	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
 	exit(1);
 }
@@ -63,8 +63,8 @@ int read_long_param(const char *opt, const char *arg) {
 		m = atoi(arg);
 	} else if (check(opt, "epoch")) {
 		epoch = atoi(arg);
-	} else if (check(opt, "thread")) {
-		thread = atoi(arg);
+	} else if (check(opt, "threads")) {
+		threads = atoi(arg);
 	} else if (check(opt, "dump")) {
 		dmp = atoi(arg);
 	} else if (check(opt, "vocab")) {
@@ -91,7 +91,7 @@ int read_param(int argc, char **argv) {
 			{"word_order", required_argument, 0, 0},
 			{"letter_order", required_argument, 0, 0},
 			{"epoch", required_argument, 0, 0},
-			{"thread", required_argument, 0, 0},
+			{"threads", required_argument, 0, 0},
 			{"dump", required_argument, 0, 0},
 			{"vocab", required_argument, 0, 0},
 			{0, 0, 0, 0}
@@ -116,7 +116,7 @@ int read_param(int argc, char **argv) {
 				epoch = atoi(optarg);
 				break;
 			case 't':
-				thread = atoi(optarg);
+				threads = atoi(optarg);
 				break;
 			case 'v':
 				vocab = atoi(optarg);
@@ -151,7 +151,7 @@ int mcmc() {
 	npylm lm(n, m);
 	lm.set(vocab);
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #endif
 	for (auto i = 0; i < epoch; ++i) {
 		int rd[corpus.size()] = {0};
@@ -160,7 +160,7 @@ int mcmc() {
 		while (j < corpus.size()) {
 			// remove
 			if (i > 0) {
-				for (auto t = 0; t < thread; ++t) {
+				for (auto t = 0; t < threads; ++t) {
 					if (j+t < corpus.size())
 						lm.remove(corpus[rd[j+t]]);
 				}
@@ -178,7 +178,7 @@ int mcmc() {
 					}
 				}
 #else
-				for (auto t = 0; t < thread; ++t) {
+				for (auto t = 0; t < threads; ++t) {
 					if (j+t < corpus.size()) {
 						try {
 							sentence s = lm.sample(f, rd[j+t]);
@@ -191,7 +191,7 @@ int mcmc() {
 #endif
 			}
 			// add
-			for (auto t = 0; t < thread; ++t) {
+			for (auto t = 0; t < threads; ++t) {
 				if (j+t < corpus.size()) {
 					lm.add(corpus[rd[j+t]]);
 					/*
@@ -200,7 +200,7 @@ int mcmc() {
 						*/
 				}
 			}
-			j += thread;
+			j += threads;
 			progress(i, (double)j/corpus.size());
 		}
 		// estimate hyperparameter
@@ -227,7 +227,7 @@ int parse() {
 	npylm lm(n, m);
 	lm.load(model.c_str());
 #ifdef _OPENMP
-	omp_set_num_threads(thread);
+	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
 	for (auto i = 0; i < f.head.size()-1; ++i) {
