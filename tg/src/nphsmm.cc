@@ -254,6 +254,9 @@ void nphsmm::remove(nsentence& s) {
 }
 
 void nphsmm::estimate(int iter) {
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
 	for (int i = 1; i < _k+1; ++i) {
 		(*_chunk)[i]->gibbs(iter);
 		(*_word)[i]->gibbs(iter);
@@ -265,6 +268,9 @@ void nphsmm::estimate(int iter) {
 }
 
 void nphsmm::poisson_correction(int n) {
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
 	for (int i = 1; i < _k+1; ++i) {
 		(*_word)[i]->poisson_correction(n);
 	}
