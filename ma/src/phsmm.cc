@@ -289,9 +289,6 @@ void phsmm::remove(sentence& s) {
 }
 
 void phsmm::estimate(int iter) {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
 	for (int i = 1; i < _k+1; ++i) {
 		(*_word)[i]->gibbs(iter);
 		(*_word)[i]->estimate(iter);
@@ -301,9 +298,6 @@ void phsmm::estimate(int iter) {
 }
 
 void phsmm::poisson_correction(int n) {
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
 	for (int i = 1; i < _k+1; ++i) {
 		(*_word)[i]->poisson_correction(n);
 	}
