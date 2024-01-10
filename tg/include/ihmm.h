@@ -13,7 +13,7 @@ namespace npbnlp {
 	class ihmm {
 		public:
 			ihmm();
-			ihmm(int n, int k);
+			ihmm(int n, int m, int k);
 			virtual ~ihmm();
 			virtual sentence sample(io& f, int i);
 			virtual sentence parse(io& f, int i);
@@ -23,12 +23,15 @@ namespace npbnlp {
 			virtual void poisson_correction(int n = 3000);
 			virtual void set(int v, int k);
 			virtual int n();
+			virtual int m();
 			virtual int k();
+			virtual init(sentence& s);
 			virtual void slice(double a, double b);
 			virtual void save(const char *file);
 			virtual void load(const char *file);
 		protected:
 			int _n;
+			int _m;
 			int _v;
 			int _k;
 			int _K;

@@ -46,6 +46,7 @@ phsmm::~phsmm() {
 void phsmm::set(int v, int k) {
 	_v = v;
 	_K = k;
+	_k = min(_k, _K);
 	for (auto it = _letter->begin(); it != _letter->end(); ++it) {
 		(*it)->set_v(_v);
 	}
@@ -188,10 +189,13 @@ void phsmm::init(sentence& s) {
 		context *p = _pos->h();
 		for (int j = 1; j < _l; ++j) {
 			word& w = s.wd(i-j);
+			p = p->make(w.pos);
+			/*
 			context *q = p->make(w.pos);
 			if (!q)
 				break;
 			p = q;
+			*/
 		}
 		vector<double> table;
 		for (int k = 1; k < _k+1; ++k) {

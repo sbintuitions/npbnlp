@@ -44,6 +44,7 @@ nphsmm::~nphsmm() {
 void nphsmm::set(int v, int k) {
 	_v = v;
 	_K = k;
+	_k = min(_k, _K);
 	for (auto it = _letter->begin(); it != _letter->end(); ++it) {
 		(*it)->set_v(_v);
 	}
