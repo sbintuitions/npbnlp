@@ -11,6 +11,7 @@
 
 #define C 50000
 #define K 1000
+#define ZERO 1e-36
 
 using namespace std;
 using namespace npbnlp;
@@ -64,9 +65,58 @@ int ihmm::k() {
 }
 
 void ihmm::save(const char *file) {
+	FILE *fp = NULL;
+	if ((fp = fopen(file, "wb")) == NULL)
+		throw "failed to open save file in ihmm::save";
+	try {
+		if (fwrite(&_n, sizeof(int), 1, fp) != 1)
+			throw "failed to write _n in ihmm::save";
+		if (fwrite(&_m, sizeof(int), 1, fp) != 1)
+			throw "failed to write _m in ihmm::save";
+		if (fwrite(&_v, sizeof(int), 1, fp) != 1)
+			throw "failed to write _v in ihmm::save";
+		if (fwrite(&_k, sizeof(int), 1, fp) != 1)
+			throw "failed to write _k in ihmm::save";
+		if (fwrite(&_K, sizeof(int), 1, fp) != 1)
+			throw "failed to write _K in ihmm::save";
+		_pos->save(fp);
+		for (auto i = 0; i < _k+1; ++i) {
+			(*_word)[i]->save(fp);
+			(*_letter)[i]->save(fp);
+		}
+	} catch (const char *ex) {
+		throw ex;
+	}
+	fclose(fp);
 }
 
 void ihmm::load(const char *file) {
+	FILE *fp = NULL;
+	if ((fp = fopen(file, "rb")) == NULL)
+		throw "failed to open save file in ihmm::load";
+	try {
+		if (fread(&_n, sizeof(int), 1, fp) != 1)
+			throw "failed to read _n in ihmm::load";
+		if (fread(&_m, sizeof(int), 1, fp) != 1)
+			throw "failed to read _m in ihmm::load";
+		if (fread(&_v, sizeof(int), 1, fp) != 1)
+			throw "failed to read _v in ihmm::load";
+		if (fread(&_k, sizeof(int), 1, fp) != 1)
+			throw "failed to read _k in ihmm::load";
+		if (fread(&_K, sizeof(int), 1, fp) != 1)
+			throw "failed to read _K in ihmm::load";
+		_pos->load(fp);
+		for (auto i = 0; i < _k+1; ++i) {
+			_word->push_back(shared_ptr<hpyp>(new hpyp(1)));
+			_letter->push_back(shared_ptr<vpyp>(new vpyp(_m)));
+			(*_word)[i]->load(fp);
+			(*_letter)[i]->load(fp);
+			(*_word)[i]->set_base((*_letter)[i].get());
+		}
+	} catch (const char *ex) {
+		throw ex;
+	}
+	fclose(fp);
 }
 
 void ihmm::slice(double a, double b) {
@@ -194,9 +244,126 @@ void ihmm::poisson_correction(int n) {
 }
 
 sentence ihmm::sample(io& f, int i) {
+	hlattice l(f, i);
+	vt dp;
+	_slice(l);
+	for (auto t = 0; t < l.k.size(); ++t) {
+		for (auto it = l.begin(t); it!= l.end(t); ++it) {
+			int k = *it;
+			const context *h = _pos->h();
+			double mu = l.mu[t];
+			for (auto jt = l.begin(t-1); jt != l.end(t-1); ++jt) {
+				const context *g = NULL;
+				if (_n > 1)
+					g = h->find(*jt);
+				if (g)
+					_forward(l, t-1, mu, g, l.s.wd(t), k, *jt, dp[t][k], dp[t-1][*jt], _n-1, false);
+				else
+					_forward(l, t-1, mu, h, l.s.wd(t), k, *jt, dp[t][k], dp[t-1][*jt], _n-1, true);
+			}
+		}
+	}
+	int k = 0; // eos
+	double mu = log(ZERO);
+	int t = l.k.size()-1;
+	while (t >= 0) {
+		const context *h = _pos->h();
+		vector<double> table;
+		vector<int> pos;
+		for (auto jt = l.begin(t-1); jt != l.end(t-1); ++jt) {
+			const context *g = NULL;
+			if (_n > 1)
+				g = h->find(*jt);
+			int j = table.size();
+			table.push_back(1.);
+			pos.push_back(*jt);
+			if (g)
+				_backward(l, t-1, mu, g, l.s.wd(t), k, *jt, table[j], dp[t][*jt], _n-1, false);
+			else
+				_backward(l, t-1, mu, h, l.s.wd(t), k, *jt, table[j], dp[t][*jt], _n-1, true);
+		}
+		int id = rd::ln_draw(table);
+		k = pos[id];
+		l.s.wd(t).pos = k;
+		mu = l.mu[t];
+	}
+	sentence s = l.s;
+	return s;
 }
 
 sentence ihmm::parse(io& f, int i) {
 	sentense s;
 	return s;
+}
+
+void ihmm::_forward(hlattice& l, int i, double mu, const context *c, int k, word& w, int p, vt& a, vt& b, int n, bool not_exist) {
+	if (n <= 1) {
+		if (_pos->lp(k, c) < mu)
+			return;
+		a.v = math::lse(a.v, b.v+(*_word)[k]->lp(w, (*_word)[k]->h())+_pos->lp(k, c), !a.is_init());
+		if (!a.is_init())
+			a.set(true);
+	} else {
+		for (auto jt = l.begin(i-1); jt != l.end(i-1); ++jt) {
+			const context *g = NULL;
+			if (!not_exist && n > 1)
+				g = c->find(*jt);
+			if (g)
+				_forward(l, i-1, mu, g, k, w, *jt, a[p], b[*jt], n-1, false);
+			else
+				_forward(l, i-1, mu, c, k, w, *jt, a[p], b[*jt], n-1, true);
+		}
+	}
+}
+
+void ihmm::_backward(hlattice& l, int i, double mu, const context *c, word& w, int k, int p, double& lpr, vt& b, int n, bool not_exist) {
+	if (n <= 1) {
+		if (_pos->lp(k, c) < mu)
+			return;
+		lpr = math::lse(lpr, b.v+(*_word)[k]->lp(w, (*_word)[k]->h())+_pos->lp(k, c), (lpr == 1.));
+	} else {
+		for (auto jt = l.begin(i-1); jt != l.end(i-1); ++jt) {
+			const context *g = NULL;
+			if (!not_exist && n > 1)
+				g = c->find(*jt);
+			if (g)
+				_backward(l, i-1, mu, g, k, w, k, *jt, lpr, b[p], n-1, false);
+			else
+				_backward(l, i-1, mu, c, k, w, k, *jt, lpr, b[p], n-1, true);
+		}
+	}
+}
+
+void ihmm::_slice(hlattice& l) {
+	beta_distribution be;
+	shared_ptr<generator> g = generator::create();
+	for (auto t = 0; t < l.k.size(); ++t) {
+		word& wd = l.s.wd(t);
+		context *h = _pos->h();
+		for (auto j = 1; j < _n; ++j) {
+			word& w = l.s.wd(t-j);
+			context *u = h->find(w.pos);
+			if (!u)
+				break;
+			h = u;
+		}
+		double z = 0;
+		vector<double> table;
+		for (auto k = 1; k < _k+1; ++k) {
+			double lp = (*_word)[k]->lp(wd, (*_word)[k]->h())+_pos->lp(k, h);
+			z = math::lse(z, lp, (z==0));
+			table.push_back(lp);
+		}
+		for (auto i = table.begin(); i != table.end(); ++i) {
+			*i -= z;
+		}
+		int id = rd::ln_draw(table);
+		double mu = log(be(_a, _b))+table[id];
+		l.mu[t] = mu;
+		wd.pos = id+1;
+		for (auto i = 0; i < table.size(); ++i) {
+			if (table[i] >= mu)
+				l.k[t].push_back(i+1);
+		}
+	}
 }

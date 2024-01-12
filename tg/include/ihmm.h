@@ -41,6 +41,10 @@ namespace npbnlp {
 			std::shared_ptr<std::vector<std::shared_ptr<hpyp> > > _word;
 			std::shared_ptr<std::vector<std::shared_ptr<vpyp> > > _letter;
 			std::mutex _mutex;
+
+			void _forward(hlattice& l, int i, double mu, const context *c, int k, word& w, int p, vt& a, vt& b, int n, bool not_exist);
+			void _backward(hlattice& l, int i, double mu, const context *c, word& w, int k, int p, double& lpr, vt& b, int n, bool not_exist);
+			void _slice(hlattice& l);
 		private:
 	};
 }
