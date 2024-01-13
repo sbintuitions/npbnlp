@@ -104,20 +104,20 @@ void phsmm::save(const char *file) {
 void phsmm::load(const char *file) {
 	FILE *fp = NULL;
 	if ((fp = fopen(file, "rb")) == NULL)
-		throw "failed to open save file in phsmm::save";
+		throw "failed to open save file in phsmm::load";
 	try {
 		if (fread(&_n, sizeof(int), 1, fp) != 1)
-			throw "failed to read _n in phsmm::save";
+			throw "failed to read _n in phsmm::load";
 		if (fread(&_m, sizeof(int), 1, fp) != 1)
-			throw "failed to read _m in phsmm::save";
+			throw "failed to read _m in phsmm::load";
 		if (fread(&_l, sizeof(int), 1, fp) != 1)
-			throw "failed to read _l in phsmm::save";
+			throw "failed to read _l in phsmm::load";
 		if (fread(&_k, sizeof(int), 1, fp) != 1)
-			throw "failed to read _k in phsmm::save";
+			throw "failed to read _k in phsmm::load";
 		if (fread(&_v, sizeof(int), 1, fp) != 1)
-			throw "failed to read _v in phsmm::save";
+			throw "failed to read _v in phsmm::load";
 		if (fread(&_K, sizeof(int), 1, fp) != 1)
-			throw "failed to read _K in phsmm::save";
+			throw "failed to read _K in phsmm::load";
 		_pos->load(fp);
 		while (_word->size() < _k+1) {
 			_word->push_back(shared_ptr<hpyp>(new hpyp(_n)));
