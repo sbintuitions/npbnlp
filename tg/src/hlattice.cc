@@ -58,5 +58,5 @@ vector<int>::iterator hlattice::begin(int i) {
 vector<int>::iterator hlattice::end(int i) {
 	if (i < 0 || i >= s.size())
 		return bos.end();
-	return k[k].end();
+	return k[i].end();
 }

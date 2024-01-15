@@ -25,7 +25,7 @@ namespace npbnlp {
 			virtual int n();
 			virtual int m();
 			virtual int k();
-			virtual init(sentence& s);
+			virtual void init(sentence& s);
 			virtual void slice(double a, double b);
 			virtual void save(const char *file);
 			virtual void load(const char *file);
@@ -45,6 +45,8 @@ namespace npbnlp {
 			void _forward(hlattice& l, int i, double mu, const context *c, int k, word& w, int p, vt& a, vt& b, int n, bool not_exist);
 			void _backward(hlattice& l, int i, double mu, const context *c, word& w, int k, int p, double& lpr, vt& b, int n, bool not_exist);
 			void _slice(hlattice& l);
+			void _resize();
+			void _shrink();
 		private:
 	};
 }

@@ -144,7 +144,7 @@ void ihmm::init(sentence& s) {
 			p = p->make(w.pos);
 		}
 		vector<double> table;
-		for (int k = 1; i < _k+1; ++k) {
+		for (int k = 1; k < _k+1; ++k) {
 			const context *c = (*_word)[k]->h();
 			double lp = _pos->lp(k, p)+(*_word)[k]->lp(x, c);
 			table.push_back(lp);
@@ -157,6 +157,7 @@ void ihmm::init(sentence& s) {
 		context *h = (*_word)[pos]->make(s, i);
 		(*_word)[pos]->add(x, h);
 		_pos->add(pos, p);
+		pfreq[pos]++;
 	}
 	// eos
 	context *h = (*_word)[0]->make(s, s.size());
@@ -181,7 +182,7 @@ void ihmm::add(sentence& s) {
 			w.id = (*dic)[w];
 		}
 		wfreq[w.id]++;
-		qfreq[w.pos]++;
+		pfreq[w.pos]++;
 	}
 	int rd[s.size()+1] = {0};
 	rd::shuffle(rd, s.size()+1);
@@ -206,7 +207,7 @@ void ihmm::remove(sentence& s) {
 	for (auto i = 0; i < s.size(); ++i) {
 		word& w = s.wd(i);
 		wfreq[w.id]--;
-		qfreq[w.pos]--;
+		pfreq[w.pos]--;
 		if (wfreq[w.id] == 0) {
 			dic->remove(w);
 			wfreq.erase(w.id);
@@ -257,15 +258,15 @@ sentence ihmm::sample(io& f, int i) {
 				if (_n > 1)
 					g = h->find(*jt);
 				if (g)
-					_forward(l, t-1, mu, g, l.s.wd(t), k, *jt, dp[t][k], dp[t-1][*jt], _n-1, false);
+					_forward(l, t-1, mu, g, k, l.s.wd(t), *jt, dp[t][k], dp[t-1][*jt], _n-1, false);
 				else
-					_forward(l, t-1, mu, h, l.s.wd(t), k, *jt, dp[t][k], dp[t-1][*jt], _n-1, true);
+					_forward(l, t-1, mu, h, k, l.s.wd(t), *jt, dp[t][k], dp[t-1][*jt], _n-1, true);
 			}
 		}
 	}
 	int k = 0; // eos
 	double mu = log(ZERO);
-	int t = l.k.size()-1;
+	int t = l.k.size();
 	while (t >= 0) {
 		const context *h = _pos->h();
 		vector<double> table;
@@ -282,6 +283,7 @@ sentence ihmm::sample(io& f, int i) {
 			else
 				_backward(l, t-1, mu, h, l.s.wd(t), k, *jt, table[j], dp[t][*jt], _n-1, true);
 		}
+		--t;
 		int id = rd::ln_draw(table);
 		k = pos[id];
 		l.s.wd(t).pos = k;
@@ -292,7 +294,7 @@ sentence ihmm::sample(io& f, int i) {
 }
 
 sentence ihmm::parse(io& f, int i) {
-	sentense s;
+	sentence s;
 	return s;
 }
 
@@ -327,9 +329,9 @@ void ihmm::_backward(hlattice& l, int i, double mu, const context *c, word& w, i
 			if (!not_exist && n > 1)
 				g = c->find(*jt);
 			if (g)
-				_backward(l, i-1, mu, g, k, w, k, *jt, lpr, b[p], n-1, false);
+				_backward(l, i-1, mu, g, w, k, *jt, lpr, b[p], n-1, false);
 			else
-				_backward(l, i-1, mu, c, k, w, k, *jt, lpr, b[p], n-1, true);
+				_backward(l, i-1, mu, c, w, k, *jt, lpr, b[p], n-1, true);
 		}
 	}
 }
@@ -366,4 +368,20 @@ void ihmm::_slice(hlattice& l) {
 				l.k[t].push_back(i+1);
 		}
 	}
+}
+
+void ihmm::_resize() {
+	if (_k+1 > _K)
+		return;
+	++_k;
+	_word->resize(_k+1, shared_ptr<hpyp>(new hpyp(1)));
+	_letter->resize(_k+1, shared_ptr<vpyp>(new vpyp(_m)));
+	(*_word)[_k]->set_base((*_letter)[_k].get());
+	(*_letter)[_k]->set_v(_v);
+}
+
+void ihmm::_shrink() {
+	--_k;
+	_word->pop_back();
+	_letter->pop_back();
 }
