@@ -189,7 +189,7 @@ int tokenize(io& f, vector<sentence>& c) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-		progress("tokenizing",0,(double)i/f.head.size());
+		progress("tokenizing",f.head.size()-1,(double)i/(f.head.size()-1));
 	}
 	// indexing
 	for (auto s = c.begin(); s != c.end(); ++s) {

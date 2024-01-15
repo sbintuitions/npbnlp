@@ -11,7 +11,6 @@
 
 #define C 50000
 #define K 1000
-#define ZERO 1e-36
 
 using namespace std;
 using namespace npbnlp;
@@ -252,7 +251,7 @@ sentence ihmm::sample(io& f, int i) {
 		for (auto it = l.begin(t); it!= l.end(t); ++it) {
 			int k = *it;
 			const context *h = _pos->h();
-			double mu = l.mu[t];
+			double mu = l.u(t);
 			for (auto jt = l.begin(t-1); jt != l.end(t-1); ++jt) {
 				const context *g = NULL;
 				if (_n > 1)
@@ -265,7 +264,7 @@ sentence ihmm::sample(io& f, int i) {
 		}
 	}
 	int k = 0; // eos
-	double mu = log(ZERO);
+	double mu = l.u(l.k.size());
 	int t = l.k.size();
 	while (t >= 0) {
 		const context *h = _pos->h();
@@ -287,14 +286,58 @@ sentence ihmm::sample(io& f, int i) {
 		int id = rd::ln_draw(table);
 		k = pos[id];
 		l.s.wd(t).pos = k;
-		mu = l.mu[t];
+		mu = l.u(t);
 	}
 	sentence s = l.s;
 	return s;
 }
 
 sentence ihmm::parse(io& f, int i) {
-	sentence s;
+	hlattice l(f, i);
+	vt dp;
+	_slice(l, true);
+	for (auto t = 0; t < l.k.size(); ++t) {
+		for (auto it = l.begin(t); it!= l.end(t); ++it) {
+			int k = *it;
+			const context *h = _pos->h();
+			double mu = l.u(t);
+			for (auto jt = l.begin(t-1); jt != l.end(t-1); ++jt) {
+				const context *g = NULL;
+				if (_n > 1)
+					g = h->find(*jt);
+				if (g)
+					_forward(l, t-1, mu, g, k, l.s.wd(t), *jt, dp[t][k], dp[t-1][*jt], _n-1, false);
+				else
+					_forward(l, t-1, mu, h, k, l.s.wd(t), *jt, dp[t][k], dp[t-1][*jt], _n-1, true);
+			}
+		}
+	}
+	int k = 0; // eos
+	double mu = l.u(l.k.size());
+	int t = l.k.size();
+	while (t >= 0) {
+		const context *h = _pos->h();
+		vector<double> table;
+		vector<int> pos;
+		for (auto jt = l.begin(t-1); jt != l.end(t-1); ++jt) {
+			const context *g = NULL;
+			if (_n > 1)
+				g = h->find(*jt);
+			int j = table.size();
+			table.push_back(1.);
+			pos.push_back(*jt);
+			if (g)
+				_backward(l, t-1, mu, g, l.s.wd(t), k, *jt, table[j], dp[t][*jt], _n-1, false);
+			else
+				_backward(l, t-1, mu, h, l.s.wd(t), k, *jt, table[j], dp[t][*jt], _n-1, true);
+		}
+		--t;
+		int id = rd::best(table);
+		k = pos[id];
+		l.s.wd(t).pos = k;
+		mu = l.u(t);
+	}
+	sentence s = l.s;
 	return s;
 }
 
@@ -336,7 +379,7 @@ void ihmm::_backward(hlattice& l, int i, double mu, const context *c, word& w, i
 	}
 }
 
-void ihmm::_slice(hlattice& l) {
+void ihmm::_slice(hlattice& l, bool best) {
 	beta_distribution be;
 	shared_ptr<generator> g = generator::create();
 	for (auto t = 0; t < l.k.size(); ++t) {
@@ -359,9 +402,13 @@ void ihmm::_slice(hlattice& l) {
 		for (auto i = table.begin(); i != table.end(); ++i) {
 			*i -= z;
 		}
-		int id = rd::ln_draw(table);
+		int id = 0;
+		if (best)
+			id = rd::best(table);
+		else
+			id = rd::ln_draw(table);
 		double mu = log(be(_a, _b))+table[id];
-		l.mu[t] = mu;
+		l.slice(t, mu);
 		wd.pos = id+1;
 		for (auto i = 0; i < table.size(); ++i) {
 			if (table[i] >= mu)

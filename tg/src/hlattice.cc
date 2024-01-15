@@ -1,8 +1,10 @@
 #include"hlattice.h"
+#include<cmath>
 #ifdef _OPENMP
 #include<omp.h>
 #endif
 
+#define ZERO 1e-36
 using namespace std;
 using namespace npbnlp;
 
@@ -45,7 +47,7 @@ void hlattice::slice(int i, double u) {
 
 double hlattice::u(int i) {
 	if (i < 0 || i >= s.size())
-		return 0;
+		return log(ZERO);
 	return mu[i];
 }
 
