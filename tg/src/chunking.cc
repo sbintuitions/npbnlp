@@ -24,11 +24,11 @@ static string model("nnpylm.model");
 static string cdic("chunk.dic");
 static string wdic("word.dic");
 
-void progress(int i, double pct) {
+void progress(const char *s, int i, double pct) {
 	int val = (int) (pct * 100);
 	int lpad = (int) (pct * PBWIDTH);
 	int rpad = PBWIDTH - lpad;
-	printf("\repoch %4d %3d%% [%.*s%*s]", i, val, lpad, PBSTR, rpad, "");
+	printf("\r%s %4d %3d%% [%.*s%*s]", s, i, val, lpad, PBSTR, rpad, "");
 	fflush(stdout);
 }
 
@@ -147,6 +147,10 @@ int tokenize(io& f, vector<sentence>& c) {
 #endif
 	for (auto i = 0; i < f.head.size()-1; ++i) {
 		c[i] = lm.parse(f, i);
+#ifdef _OPENMP
+#pragma omp ordered
+#endif
+		progress("tokenizing",i,(double)(i+1)/(f.head.size()-1));
 	}
 	// indexing
 	for (auto s = c.begin(); s != c.end(); ++s) {
@@ -157,6 +161,8 @@ int tokenize(io& f, vector<sentence>& c) {
 			}
 		}
 	}
+	int rpad = 2*PBWIDTH;
+	printf("\r%*s", rpad,"");
 	d->save(wdic.c_str());
 	return 0;
 }
@@ -226,12 +232,12 @@ int mcmc() {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-			progress(i, (double)j/corpus.size());
+			progress("epoch",i, (double)(j+1)/corpus.size());
 		}
 		chunker.estimate(20);
 		if (i)
 			chunker.poisson_correction();
-		if (dmp && i%dmp == 0) {
+		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
 				dump(*s);

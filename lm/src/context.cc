@@ -205,7 +205,6 @@ bool context::_crp_remove(int k) {
 	r[id]--;
 	if (r[id] == 0) {
 		--_table;
-		//lock_guard<mutex> m(_mutex);
 		r.erase(r.begin()+id);
 		if (r.size() == 0) {
 			_restaurant->erase(k);

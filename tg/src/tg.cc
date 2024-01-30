@@ -168,12 +168,11 @@ int mcmc(io& f, vector<sentence>& corpus) {
 	rd::shuffle(rid, corpus.size());
 	for (auto i = 0; i < corpus.size(); ++i) {
 		hmm.init(corpus[rid[i]]);
-		progress("init", i, (double)i/corpus.size());
+		progress("init", i, (double)(i+1)/corpus.size());
 	}
-	//for (auto it = corpus.begin(); it != corpus.end(); ++it) {
-	//	lm.init(*it);
-	//}
-	//hmm.estimate(20);
+	int rpad = 2*PBWIDTH;
+	printf("\r%*s", rpad,"");
+	hmm.estimate(20);
 	for (auto i = 0; i < epoch; ++i) {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());
@@ -219,12 +218,12 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-			progress("epoch", i, (double)j/corpus.size());
+			progress("epoch", i, (double)(j+1)/corpus.size());
 		}
 		// estimate hyperparameter
 		hmm.estimate(20);
 		hmm.poisson_correction(1000);
-		if (dmp && i%dmp == 0) {
+		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
 				dump(*s);

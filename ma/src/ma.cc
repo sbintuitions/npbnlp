@@ -225,12 +225,12 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-			progress("epoch", i, (double)j/corpus.size());
+			progress("epoch", i, (double)(j+1)/corpus.size());
 		}
 		// estimate hyperparameter
-		lm.estimate(1);
+		lm.estimate(20);
 		lm.poisson_correction(1000);
-		if (dmp && i%dmp == 0) {
+		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
 				dump(*s);
@@ -310,13 +310,15 @@ int init(io& f, vector<sentence>& corpus) {
 				if (j+t < corpus.size())
 					lm.add(corpus[rd[j+t]]);
 			j += threads;
-			progress("init", NPYLM_EPOCH, (double)i/NPYLM_EPOCH);
+			progress("init", i, (double)(i+1)/NPYLM_EPOCH);
 
 		}
 		lm.estimate(1);
 		if (i)
 			lm.poisson_correction(1000);
 	}
+	int rpad = 2*PBWIDTH;
+	printf("\r%*s", rpad,"");
 	return 0;
 }
 

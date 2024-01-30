@@ -11,10 +11,10 @@ using namespace npbnlp;
 static word eos;
 static vector<int> bos(1, 0);
 
-hlattice::hlattice(io& f, int i) {
+hlattice::hlattice(io& f, int i):s(*f.raw, f.head[i], f.head[i+1]) {
 	int head = f.head[i];
 	int tail = f.head[i+1];
-	s = sentence(*f.raw, head, tail);
+	//s = sentence(*f.raw, head, tail);
 	mu.resize(s.size(), 0);
 	k.resize(s.size());
 }

@@ -266,6 +266,7 @@ sentence ihmm::sample(io& f, int i) {
 	int k = 0; // eos
 	double mu = l.u(l.k.size());
 	int t = l.k.size();
+	sentence s(l.s);
 	while (t >= 0) {
 		const context *h = _pos->h();
 		vector<double> table;
@@ -285,10 +286,10 @@ sentence ihmm::sample(io& f, int i) {
 		--t;
 		int id = rd::ln_draw(table);
 		k = pos[id];
-		l.s.wd(t).pos = k;
+		s.wd(t).pos = k;
 		mu = l.u(t);
 	}
-	sentence s = l.s;
+	//sentence s(l.s);
 	return s;
 }
 
@@ -337,7 +338,7 @@ sentence ihmm::parse(io& f, int i) {
 		l.s.wd(t).pos = k;
 		mu = l.u(t);
 	}
-	sentence s = l.s;
+	sentence s(l.s);
 	return s;
 }
 
@@ -383,7 +384,6 @@ void ihmm::_slice(hlattice& l, bool best) {
 	beta_distribution be;
 	shared_ptr<generator> g = generator::create();
 	for (auto t = 0; t < l.k.size(); ++t) {
-		word& wd = l.s.wd(t);
 		context *h = _pos->h();
 		for (auto j = 1; j < _n; ++j) {
 			word& w = l.s.wd(t-j);
@@ -392,6 +392,7 @@ void ihmm::_slice(hlattice& l, bool best) {
 				break;
 			h = u;
 		}
+		word& wd = l.s.wd(t);
 		double z = 0;
 		vector<double> table;
 		for (auto k = 1; k < _k+1; ++k) {
