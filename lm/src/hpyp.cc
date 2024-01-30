@@ -445,6 +445,8 @@ void hpyp::_sample(vector<unsigned int>& w) {
 			context *c = h->find(w[(int)w.size()-m]);
 			if (c)
 				h = c;
+			else
+				break;
 		}
 		k = h->sample(_base);
 		if (k)
@@ -588,6 +590,7 @@ void hpyp::estimate(int iter) {
 	gamma_dist gm;
 	shared_ptr<generator> g = generator::create();
 	for (int i = 0; i < iter; ++i) {
+		lock_guard<mutex> m(_mutex);
 		vector<double> discount_a(_n);
 		vector<double> discount_b(_n);
 		vector<double> strength_a(_n);
@@ -609,6 +612,7 @@ void hpyp::estimate(int iter) {
 
 void hpyp::poisson_correction(int n) {
 	if (_bc != nullptr) {
+		lock_guard<mutex> m(_mutex);
 		_estimate_length(n);
 		_estimate_poisson();
 	}
@@ -623,6 +627,7 @@ void hpyp::gibbs(int iter) {
 			int rd[size] = {0};
 			rd::shuffle(rd, size);
 			for (int j = 0; j < size; ++j) {
+				lock_guard<mutex> m(_mutex);
 				wrap::remove_a(it->second[j], _base);
 				wrap::add_a(it->second[j], _base);
 			}

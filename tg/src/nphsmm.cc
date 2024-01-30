@@ -507,7 +507,7 @@ void nphsmm::_resize() {
 	_chunk->resize(_k+1, shared_ptr<hpyp>(new hpyp(_n)));
 	_word->resize(_k+1, shared_ptr<hpyp>(new hpyp(_m)));
 	_letter->resize(_k+1, shared_ptr<vpyp>(new vpyp(_l)));
-	(*_chunk)[_k]->set_base((*_word)[_k].get());
+	(*_chunk)[_k+1]->set_base((*_word)[_k].get());
 	(*_word)[_k]->set_base((*_letter)[_k].get());
 	(*_letter)[_k]->set_v(_v);
 }

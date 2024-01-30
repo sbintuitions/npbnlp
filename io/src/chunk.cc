@@ -27,6 +27,7 @@ int cid::operator[](chunk& c) {
 
 int cid::index(chunk& c) {
 	if (_index.find(c) == _index.end()) {
+		lock_guard<mutex> m(_mutex);
 		if (!_misn.empty()) {
 			_index[c] = _misn[_misn.size()-1];
 			_misn.pop_back();
@@ -40,6 +41,7 @@ int cid::index(chunk& c) {
 void cid::remove(chunk& c) {
 	auto it = _index.find(c);
 	if (it != _index.end()) {
+		lock_guard<mutex> m(_mutex);
 		_misn.push_back(it->second);
 		_index.erase(c);
 	}

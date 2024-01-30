@@ -44,6 +44,13 @@ sentence::sentence(const sentence& s) {
 		n.push_back(*it);
 }
 
+sentence::sentence(sentence&& s) {
+	w = move(s.w);
+	n = move(s.n);
+	s.w.clear();
+	s.n.clear();
+}
+
 sentence& sentence::operator=(const sentence& s) {
 	w.clear();
 	n.clear();

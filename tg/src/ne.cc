@@ -189,7 +189,7 @@ int tokenize(io& f, vector<sentence>& c) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-		progress("tokenizing",f.head.size()-1,(double)i/(f.head.size()-1));
+		progress("tokenizing",i,(double)(i+1)/(f.head.size()-1));
 	}
 	// indexing
 	for (auto s = c.begin(); s != c.end(); ++s) {
@@ -259,7 +259,7 @@ int init(nio& f, vector<nsentence>& corpus) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-			progress("init", NNPYLM_EPOCH, (double)i/NNPYLM_EPOCH);
+			progress("init", i, (double)(i+1)/NNPYLM_EPOCH);
 		}
 		chunker.estimate(1);
 		if (i)
@@ -326,11 +326,11 @@ int mcmc(nio& f, vector<nsentence>& corpus) {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-			progress("epoch",i, (double)j/corpus.size());
+			progress("epoch",i, (double)(j+1)/corpus.size());
 		}
 		lm.estimate(1);
 		lm.poisson_correction(1000);
-		if (dmp && i%dmp == 0) {
+		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
 				dump(*s);

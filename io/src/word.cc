@@ -30,6 +30,7 @@ int wid::operator[](word& w) {
 
 int wid::index(word& w) {
 	if (_index.find(w) == _index.end()) {
+		lock_guard<mutex> m(_mutex);
 		if (!_misn.empty()) {
 			_index[w] = _misn[_misn.size()-1];
 			_misn.pop_back();
@@ -43,6 +44,7 @@ int wid::index(word& w) {
 void wid::remove(word& w) {
 	auto it = _index.find(w);
 	if (it != _index.end()) {
+		lock_guard<mutex> m(_mutex);
 		_misn.push_back(it->second);
 		_index.erase(w);
 	}
@@ -172,7 +174,7 @@ word::word(word&& w): head(w.head), len(w.len), id(w.id), pos(w.pos), n(w.n) {
 	for (auto i = w.m.begin(); i < w.m.end(); ++i)
 		m.push_back(*i);
 		*/
-	w._doc = nullptr;
+	w._doc = NULL;
 	w.head = 0;
 	w.len = 1;
 	w.id = 0;
@@ -212,7 +214,7 @@ word& word::operator=(word&& w) noexcept {
 	for (auto i = 0; i < w.m.size(); ++i)
 		m[i] = w.m[i];
 		*/
-	w._doc = nullptr;
+	w._doc = NULL;
 	w.head = 0;
 	w.len = 1;
 	w.id = 0;

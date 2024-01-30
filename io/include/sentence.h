@@ -10,7 +10,7 @@ namespace npbnlp {
 			sentence(const sentence& s);
 			sentence(std::vector<unsigned int>& d, int head, int tail);
 			sentence& operator=(const sentence& s);
-			sentence(sentence&& s) = default;
+			sentence(sentence&& s);
 			sentence& operator=(sentence&& s) noexcept;
 			virtual ~sentence();
 			// return word.id

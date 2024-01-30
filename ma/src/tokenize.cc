@@ -201,13 +201,13 @@ int mcmc() {
 				}
 			}
 			j += threads;
-			progress(i, (double)j/corpus.size());
+			progress(i, (double)(j+1)/corpus.size());
 		}
 		// estimate hyperparameter
 		lm.estimate(20);
 		if (i)
 			lm.poisson_correction(3000);
-		if (dmp && i%dmp == 0) {
+		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
 				dump(*s);
