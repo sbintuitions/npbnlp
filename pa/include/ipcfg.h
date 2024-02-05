@@ -13,6 +13,7 @@ namespace npbnlp {
 	class ipcfg {
 		public:
 			ipcfg();
+			ipcfg(int m);
 			virtual ~ipcfg();
 			virtual tree sample(io& f, int i);
 			virtual tree parse(io& f, int i);
@@ -33,7 +34,9 @@ namespace npbnlp {
 			std::shared_ptr<hpyp> _word;
 			std::shared_ptr<vpyp> _letters;
 			std::mutex _mutex;
-
+			void _slice(cyk& l);
+			void _resize();
+			void _shrink();
 	};
 }
 #endif
