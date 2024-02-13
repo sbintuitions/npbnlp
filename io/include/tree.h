@@ -3,6 +3,7 @@
 
 #include"io.h"
 #include"word.h"
+#include"sentence.h"
 namespace npbnlp {
 	class node {
 		public:
@@ -11,9 +12,11 @@ namespace npbnlp {
 			int k;
 			int i;
 			int j;
+			int b;
 	};
 	class tree {
 		public:
+			tree();
 			tree(sentence& s);
 			tree(const tree& t);
 			tree& operator=(const tree& t);

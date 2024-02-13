@@ -7,14 +7,17 @@ using namespace npbnlp;
 static word eos;
 static node blank;
 
-node::node():k(-1), i(0), j(0) {
+node::node():k(-1), i(0), j(0), b(0) {
 }
 
 node::~node() {
 }
 
+tree::tree() {
+}
+
 tree::tree(sentence& s):s(s) {
-	c.resize(2*s.size());
+	c.resize(s.size()*(1.+s.size())/2);
 }
 
 tree::~tree() {
@@ -22,7 +25,7 @@ tree::~tree() {
 
 node& tree::operator[](int i) {
 	if (i < 0 || i >= c.size())
-		return brank;
+		return blank;
 	return c[i];
 }
 
@@ -35,13 +38,10 @@ word& tree::wd(int i) {
 tree::tree(const tree& t): c(t.c), s(t.s){
 }
 
-tree::tree(tree&& t): c(t.c), s(t.s){
-	t.c.clear();
-	t.s.w.clear();
-	t.s.n.clear();
-}
-
-tree& tree::operator=(const tree& t): c(t.c), s(t.s) {
+tree& tree::operator=(const tree& t) {
+	for (auto it = t.c.begin(); it != t.c.end(); ++it)
+		c.push_back(*it);
+	s = t.s;
 	return *this;
 }
 

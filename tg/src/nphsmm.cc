@@ -249,7 +249,7 @@ void nphsmm::remove(nsentence& s) {
 		}
 		_class->remove(ch.k, c);
 	}
-	for (int k = _k; kfreq[k] == 0; --k) {
+	for (int k = _k-1; kfreq[k] == 0; --k) {
 		_shrink();
 	}
 }

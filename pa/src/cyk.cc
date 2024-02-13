@@ -8,8 +8,8 @@ static vector<int> root(1, 0);
 
 cyk::cyk(io& f, int i):s(*f.raw, f.head[i], f.head[i+1]) {
 	int size = s.size();
-	k.resize(s.size(), vector<vector<int> >(s.size()));
-	mu.resize(s.size(), vector<vector<double> >(s.size(), 0);
+	k.resize(s.size(), vector<set<int> >(s.size()));
+	mu.resize(s.size(), vector<double>(s.size(), 0));
 }
 
 cyk::~cyk() {
@@ -24,7 +24,7 @@ word& cyk::wd(int i) {
 word* cyk::wp(int i) {
 	if (i < 0 || i >= s.size())
 		return &eos;
-	return &s.w(i);
+	return &s.wd(i);
 }
 
 int cyk::size(int i, int j) {
@@ -41,7 +41,7 @@ set<int>::iterator cyk::begin(int i, int j) {
 	return k[i][j].begin();
 }
 
-set<int>::iterator cyk::begin(int i, int j) {
+set<int>::iterator cyk::end(int i, int j) {
 	if (i < 0 || i >= s.size() || j < i || j >= s.size()) {
 		return k[0][s.size()-1].end();
 	}
