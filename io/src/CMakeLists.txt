@@ -9,7 +9,7 @@ link_directories(${Boost_LIBRARY_DIR})
 
 add_executable(word_test word_test.cc io.cc word.cc)
 add_executable(sentence_test sentence_test.cc io.cc word.cc sentence.cc)
-add_library(io SHARED io.cc word.cc sentence.cc chunk.cc nsentence.cc nio.cc)
+add_library(io SHARED io.cc word.cc sentence.cc chunk.cc nsentence.cc nio.cc tree.cc)
 target_compile_options(io PUBLIC
 	$<$<CONFIG:Release>:-O3 -std=c++17>
 	$<$<CONFIG:Debug>:-g -std=c++17>

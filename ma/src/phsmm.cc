@@ -287,7 +287,7 @@ void phsmm::remove(sentence& s) {
 		}
 		_pos->remove(w.pos, p);
 	}
-	for (int k = _k; pfreq[k] == 0; --k) {
+	for (int k = _k-1; pfreq[k] == 0; --k) {
 		_shrink();
 	}
 }

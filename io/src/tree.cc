@@ -4,49 +4,55 @@
 using namespace std;
 using namespace npbnlp;
 
-static tree root;
+static word eos;
+static node blank;
 
-tree::tree():k(0),left(NULL),right(NULL),_head(0),_len(0) {
+node::node():k(-1), i(0), j(0), b(0) {
 }
 
-tree::tree(int k, tree *l, tree *r):k(k),left(l),right(r),_head(0),_len(0) {
+node::~node() {
+}
+
+tree::tree() {
+}
+
+tree::tree(sentence& s):s(s) {
+	c.resize(s.size()*(1.+s.size())/2);
 }
 
 tree::~tree() {
 }
 
-tree::tree(const tree& t): k(t.k), left(t.left), right(t.right), _head(t._head), _len(t._len) {
+node& tree::operator[](int i) {
+	if (i < 0 || i >= c.size())
+		return blank;
+	return c[i];
 }
 
-tree::tree(tree&& t): k(t.k), left(t.left), right(t.right), _head(t._head), _len(t._len) {
-	t.k = 0;
-	t.left = NULL;
-	t.right = NULL;
-	t._head = 0;
-	t._len = 0;
+word& tree::wd(int i) {
+	if (i < 0 || i >= s.size())
+		return eos;
+	return s.wd(i);
+}
+
+tree::tree(const tree& t): c(t.c), s(t.s){
 }
 
 tree& tree::operator=(const tree& t) {
-	k = t.k;
-	left = t.left;
-	right = t.right;
-	_head = t._head;
-	_len = t._len;
+	for (auto it = t.c.begin(); it != t.c.end(); ++it)
+		c.push_back(*it);
+	s = t.s;
 	return *this;
 }
 
 tree& tree::operator=(tree&& t) noexcept {
 	if (this == &t)
 		return *this;
-	k = t.k;
-	left = t.left;
-	right = t.right;
-	_head = t._head;
-	_len = t._len;
-	t.k = 0;
-	t.left = NULL;
-	t.right = NULL;
-	t._head = 0;
-	t._len = 0;
+	c = move(t.c);
+	s = move(t.s);
+	t.c.clear();
+	t.s.w.clear();
+	t.s.n.clear();
+
 	return *this;
 }
