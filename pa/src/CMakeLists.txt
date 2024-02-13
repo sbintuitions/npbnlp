@@ -22,8 +22,10 @@ target_compile_options(pa PUBLIC
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND)
 	target_link_libraries(pa PUBLIC OpenMP::OpenMP_CXX io rd lm icuuc ${Boost_LIBRARIES})
+	target_link_libraries(gr PUBLIC OpenMP::OpenMP_CXX io rd lm icuuc ${Boost_LIBRARIES})
 else()
 	target_link_libraries(pa PUBLIC io rd lm icuuc ${Boost_LIBRARIES})
+	target_link_libraries(gr PUBLIC io rd lm icuuc ${Boost_LIBRARIES})
 endif()
 
 # for ICU
