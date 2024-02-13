@@ -199,6 +199,9 @@ void tree_node(tree& t, int i, vector<dot_node>& n) {
 		nd.left = -1;
 		nd.right = -1;
 		word& w = t.wd(c.i);
+		char k[1024] = {0};
+		sprintf(k, "%d:", c.k);
+		nd.label = k;
 		for (auto i = 0; i < w.len; ++i) {
 			char buf[5] = {0};
 			io::i2c(w[i], buf);

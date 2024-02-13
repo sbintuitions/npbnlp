@@ -100,16 +100,10 @@ tree ipcfg::sample(io& f, int i) {
 	_slice(c);
 	// inside
 	int size = c.s.size();
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
 	for (auto j = 0; j < size; ++j) {
 		_calc_preterm(c, j, dp[j][j]);
 	}
 	for (auto l = 1; l < size; ++l) {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
 		for (auto j = 0; j < size-l; ++j) {
 			double mu = c.mu[j][j+l];
 			_calc_nonterm(c, j, j+l, dp);
