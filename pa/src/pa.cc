@@ -230,7 +230,7 @@ void dump_dot(tree& t) {
 	tree_node(t, t.s.size()-1, nodes);
 	// label
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {
-		cout << "n" << i->id << " [label=" << i->label << "]" << endl;
+		cout << "n" << i->id << " [label=\"" << i->label << "\"]" << endl;
 	}
 	// edge
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {

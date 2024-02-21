@@ -271,10 +271,8 @@ void ipcfg::_traceback(cyk& c, int i, int j, int z, vt& a, tree& tr, bool best) 
 							s = u;
 					}
 					double lp = _nonterm->lp(z,s)+lp_l+lp_r;
-					/*
-					   if (lp < mu)
-					   continue;
-					   */
+					if (lp < mu)
+						continue;
 					table.push_back(lp+a[i][k][*l].v+a[k+1][j][*r].v);
 					left.push_back(*l);
 					right.push_back(*r);
@@ -417,8 +415,8 @@ void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 		// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
 		// draw A ~ P(A,B,C) for a threshold at cell_{i,j}
 		int id = rd::ln_draw(table);
-		//double mu = log(be(_a, _b))+table[id];
-		double mu = table[id];
+		double mu = log(be(_a, _b))+table[id];
+		//double mu = table[id];
 		c.mu[i][j] = mu;
 		for (auto m = 0; m < table.size(); ++m) {
 			if (table[m] >= mu) {
