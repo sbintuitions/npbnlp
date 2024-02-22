@@ -369,8 +369,8 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 		double lp = (*_word)[k]->lp(w, (*_word)[k]->h())+_nonterm->lp(k, _nonterm->h());
 		table.push_back(lp);
 	}
-	int id = rd::ln_draw(table);
-	//double mu = log(be(_a, _b))+table[id];
+	//int id = rd::ln_draw(table);
+	double mu = log(be(_a, _b))+table[id];
 	double mu = table[id];
 	l.mu[i][i] = mu;
 	for (auto j = 0; j < table.size(); ++j) {
