@@ -211,7 +211,7 @@ void tree_node(tree& t, int i, vector<dot_node>& n) {
 	}
 }
 
-void dump_dot(tree& t) {
+void dump_dot(tree& t, int n) {
 	string str;
 	for (auto i = 0; i < t.s.size(); ++i) {
 		word& w = t.s.wd(i);
@@ -225,7 +225,7 @@ void dump_dot(tree& t) {
 	cout << "digraph {" << endl;
 	cout << "node [fontname=IPAPGothic]" << endl;
 	cout << "edge [fontname=IPAPGothic]" << endl;
-	cout << "subgraph cluster {" << endl;
+	cout << "subgraph cluster_" << n << "{" << endl;
 	cout << "label=" << str << endl;
 	tree_node(t, t.s.size()-1, nodes);
 	// label
@@ -243,9 +243,9 @@ void dump_dot(tree& t) {
 	cout << "}" << endl;
 }
 
-void dump(tree& t) {
+void dump(tree& t, int n) {
 	if (dot) {
-		dump_dot(t);
+		dump_dot(t, n);
 	} else {
 		dump_node(t, t.s.size()-1);
 		cout << endl;
@@ -318,8 +318,9 @@ int mcmc() {
 		g.poisson_correction(1000);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
-			for (auto s = corpus.begin(); s != corpus.end(); ++s)
-				dump(*s);
+			//for (auto s = corpus.begin(); s != corpus.end(); ++s)
+			for (auto s = 0; s < corpus.size(); ++s)
+				dump(corpus[s], s);
 		}
 	}
 	cout << endl;
@@ -348,7 +349,7 @@ int parse() {
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-		dump(t);
+		dump(t, i);
 	}
 	return 0;
 }
