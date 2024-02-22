@@ -263,7 +263,7 @@ void ipcfg::_traceback(cyk& c, int i, int j, int z, vt& a, tree& tr, bool best) 
 				for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
 					double lp_r = _nonterm->lp(*r, h);
 					context *s = _nonterm->h();
-					context *u = h->find(*r);
+					context *u = s->find(*r);
 					if (u) {
 						s = u;
 						u = s->find(*l);
@@ -369,9 +369,9 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 		double lp = (*_word)[k]->lp(w, (*_word)[k]->h())+_nonterm->lp(k, _nonterm->h());
 		table.push_back(lp);
 	}
-	//int id = rd::ln_draw(table);
+	int id = rd::ln_draw(table);
 	double mu = log(be(_a, _b))+table[id];
-	double mu = table[id];
+	//double mu = table[id];
 	l.mu[i][i] = mu;
 	for (auto j = 0; j < table.size(); ++j) {
 		if (table[j] >= mu) {
