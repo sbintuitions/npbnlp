@@ -222,25 +222,25 @@ void dump_dot(tree& t, int n) {
 		}
 	}
 	vector<dot_node> nodes;
-	cout << "digraph {" << endl;
-	cout << "node [fontname=IPAPGothic]" << endl;
-	cout << "edge [fontname=IPAPGothic]" << endl;
+	//cout << "digraph {" << endl;
+	//cout << "node [fontname=IPAPGothic]" << endl;
+	//cout << "edge [fontname=IPAPGothic]" << endl;
 	cout << "subgraph cluster_" << n << "{" << endl;
 	cout << "label=" << str << endl;
 	tree_node(t, t.s.size()-1, nodes);
 	// label
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {
-		cout << "n" << i->id << " [label=\"" << i->label << "\"]" << endl;
+		cout << "n" << n << "_" << i->id << " [label=\"" << i->label << "\"]" << endl;
 	}
 	// edge
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {
 		if (i->left >= 0)
-			cout << "n" << i->id << " -> " << "n" << i->left << endl;
+			cout << "n" << n << "_" << i->id << " -> " << "n" << n << "_" << i->left << endl;
 		if (i->right >= 0)
-			cout << "n" << i->id << " -> " << "n" << i->right << endl;
+			cout << "n" << n << "_" << i->id << " -> " << "n" << n << "_" << i->right << endl;
 	}
 	cout << "}" << endl;
-	cout << "}" << endl;
+	//cout << "}" << endl;
 }
 
 void dump(tree& t, int n) {
@@ -252,6 +252,18 @@ void dump(tree& t, int n) {
 	}
 }
 
+void dump_all(vector<tree>& corpus) {
+	if (dot) {
+		cout << "digraph {" << endl;
+		cout << "node [fontname=IPAPGothic]" << endl;
+		cout << "edge [fontname=IPAPGothic]" << endl;
+	}
+	for (auto i = 0; i < corpus.size(); ++i) {
+		dump(corpus[i], i);
+	}
+	if (dot)
+		cout << "}" << endl;
+}
 
 int mcmc() {
 	io f(train.c_str());
@@ -319,8 +331,11 @@ int mcmc() {
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			//for (auto s = corpus.begin(); s != corpus.end(); ++s)
+			/*
 			for (auto s = 0; s < corpus.size(); ++s)
 				dump(corpus[s], s);
+				*/
+			dump_all(corpus);
 		}
 	}
 	cout << endl;
@@ -341,6 +356,11 @@ int parse() {
 	} catch (const char *ex) {
 		throw ex;
 	}
+	if (dot) {
+		cout << "digraph {" << endl;
+		cout << "node [fontname=IPAPGothic]" << endl;
+		cout << "edge [fontname=IPAPGothic]" << endl;
+	}
 #ifdef _OPENMP
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
@@ -351,6 +371,8 @@ int parse() {
 #endif
 		dump(t, i);
 	}
+	if (dot)
+		cout << "}" << endl;
 	return 0;
 }
 
