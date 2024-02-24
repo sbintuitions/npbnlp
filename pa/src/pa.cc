@@ -218,6 +218,8 @@ void dump_dot(tree& t, int n) {
 		for (auto j = 0; j < w.len; ++j) {
 			char buf[5] = {0};
 			io::i2c(w[j], buf);
+			if (strcmp(buf, "#") == 0)
+				str += "\\";
 			str += buf;
 		}
 	}
