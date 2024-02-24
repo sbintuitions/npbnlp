@@ -228,7 +228,7 @@ void dump_dot(tree& t, int n) {
 	//cout << "node [fontname=IPAPGothic]" << endl;
 	//cout << "edge [fontname=IPAPGothic]" << endl;
 	cout << "subgraph cluster_" << n << "{" << endl;
-	cout << "label=" << str << endl;
+	cout << "label=\"" << str << "\""<< endl;
 	tree_node(t, t.s.size()-1, nodes);
 	// label
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {
