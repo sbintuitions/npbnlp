@@ -17,18 +17,18 @@ cache::~cache() {
 
 double cache::get(int k, const context *h, bool& chk) {
 #ifdef _OPENMP
-	auto i = _c[omp_get_thread_num()].find(h);
-	if (i == _c[omp_get_thread_num()].end())
+	auto const i = _c[omp_get_thread_num()].find(h);
+	if (i == _c[omp_get_thread_num()].cend())
 #else
-	auto i = _c.find(h);
-	if (i == _c.end())
+	auto const i = _c.find(h);
+	if (i == _c.cend())
 #endif
 	{
 		chk = false;
 		return 0;
 	} else {
-		auto j = i->second.find(k);
-		if (j == i->second.end()) {
+		auto const j = i->second.find(k);
+		if (j == i->second.cend()) {
 			chk = false;
 			return 0;
 		} else {
@@ -39,6 +39,7 @@ double cache::get(int k, const context *h, bool& chk) {
 }
 
 double cache::set(int k, const context *h, double lp) {
+	lock_guard<mutex> m(_m);
 #ifdef _OPENMP
 	_c[omp_get_thread_num()][h][k] = lp;
 	return _c[omp_get_thread_num()][h][k];

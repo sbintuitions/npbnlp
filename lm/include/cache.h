@@ -7,6 +7,7 @@
 #ifdef _OPENMP
 #include<omp.h>
 #endif
+#include<mutex>
 namespace npbnlp {
 	struct contexthash {
 		size_t operator() (const context *c) const {
@@ -37,6 +38,7 @@ namespace npbnlp {
 			using lm_cache = std::unordered_map<const context*, std::unordered_map<int, double>, contexthash, contexteq>;
 #endif
 			lm_cache _c;
+			std::mutex _m;
 	};
 }
 

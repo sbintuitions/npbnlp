@@ -263,7 +263,7 @@ void ipcfg::_traceback(cyk& c, int i, int j, int z, vt& a, tree& tr, bool best) 
 				for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
 					double lp_r = _nonterm->lp(*r, h);
 					context *s = _nonterm->h();
-					context *u = h->find(*r);
+					context *u = s->find(*r);
 					if (u) {
 						s = u;
 						u = s->find(*l);
@@ -362,7 +362,7 @@ void ipcfg::_slice(cyk& l) {
 
 void ipcfg::_slice_preterm(cyk& l, int i) {
 	beta_distribution be;
-	shared_ptr<generator> g = generator::create();
+	//shared_ptr<generator> g = generator::create();
 	word& w = l.wd(i);
 	vector<double> table;
 	for (auto k = 1; k < _k+1; ++k) {
@@ -370,8 +370,8 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 		table.push_back(lp);
 	}
 	int id = rd::ln_draw(table);
-	//double mu = log(be(_a, _b))+table[id];
-	double mu = table[id];
+	double mu = log(be(_a, _b))+table[id];
+	//double mu = table[id];
 	l.mu[i][i] = mu;
 	for (auto j = 0; j < table.size(); ++j) {
 		if (table[j] >= mu) {
@@ -382,7 +382,7 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 
 void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 	beta_distribution be;
-	shared_ptr<generator> g = generator::create();
+	//shared_ptr<generator> g = generator::create();
 	vector<double> table;
 	vector<int> z;
 	for (auto k = i; k < j; ++k) {
@@ -409,73 +409,73 @@ void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 					z.push_back(m);
 				}
 			}
-			}
-		}
-		// P(B,C|A) := P(A->B C|A)
-		// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
-		// draw A ~ P(A,B,C) for a threshold at cell_{i,j}
-		int id = rd::ln_draw(table);
-		double mu = log(be(_a, _b))+table[id];
-		//double mu = table[id];
-		c.mu[i][j] = mu;
-		for (auto m = 0; m < table.size(); ++m) {
-			if (table[m] >= mu) {
-				c.k[i][j].insert(z[m]);
-			}
 		}
 	}
+	// P(B,C|A) := P(A->B C|A)
+	// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
+	// draw A ~ P(A,B,C) for a threshold at cell_{i,j}
+	int id = rd::ln_draw(table);
+	double mu = log(be(_a, _b))+table[id];
+	//double mu = table[id];
+	c.mu[i][j] = mu;
+	for (auto m = 0; m < table.size(); ++m) {
+		if (table[m] >= mu) {
+			c.k[i][j].insert(z[m]);
+		}
+	}
+}
 
-	void ipcfg::_slice_root(cyk& c) {
-		beta_distribution be;
-		shared_ptr<generator> g = generator::create();
-		int size = c.s.size();
-		vector<double> table;
-		for (auto k = 0; k < size-1; ++k) {
-			for (auto l = c.begin(0, k); l != c.end(0, k); ++l) {
-				double lp_l = _nonterm->lp(*l, _nonterm->h());
-				context *h = _nonterm->h();
-				context *t = h->find(*l);
-				if (t)
-					h = t;
-				for (auto r = c.begin(k+1, size-1); r != c.end(k+1, size-1); ++r) {
-					double lp_r = _nonterm->lp(*r, h);
-					context *s = _nonterm->h();
-					context *u = s->find(*r);
-					if (u) {
+void ipcfg::_slice_root(cyk& c) {
+	beta_distribution be;
+	//shared_ptr<generator> g = generator::create();
+	int size = c.s.size();
+	vector<double> table;
+	for (auto k = 0; k < size-1; ++k) {
+		for (auto l = c.begin(0, k); l != c.end(0, k); ++l) {
+			double lp_l = _nonterm->lp(*l, _nonterm->h());
+			context *h = _nonterm->h();
+			context *t = h->find(*l);
+			if (t)
+				h = t;
+			for (auto r = c.begin(k+1, size-1); r != c.end(k+1, size-1); ++r) {
+				double lp_r = _nonterm->lp(*r, h);
+				context *s = _nonterm->h();
+				context *u = s->find(*r);
+				if (u) {
+					s = u;
+					u = s->find(*l);
+					if (u)
 						s = u;
-						u = s->find(*l);
-						if (u)
-							s = u;
-					}
-					double lp = _nonterm->lp(0, s)+lp_l+lp_r;
-					table.push_back(lp);
 				}
+				double lp = _nonterm->lp(0, s)+lp_l+lp_r;
+				table.push_back(lp);
 			}
 		}
-		int id = rd::ln_draw(table);
-		double mu = log(be(_a, _b)+table[id]);
-		c.mu[0][size-1] = mu;
-		c.k[0][size-1].insert(0);
-		/*
-		   for (auto m = 0; m < table.size(); ++m) {
-		   if (table[m] >= mu)
-		   c.k[0][size-1][0]+=1;
-		   }
-		   */
 	}
+	int id = rd::ln_draw(table);
+	double mu = log(be(_a, _b)+table[id]);
+	c.mu[0][size-1] = mu;
+	c.k[0][size-1].insert(0);
+	/*
+	   for (auto m = 0; m < table.size(); ++m) {
+	   if (table[m] >= mu)
+	   c.k[0][size-1][0]+=1;
+	   }
+	   */
+}
 
-	void ipcfg::_resize() {
-		if (_k+1 > _K)
-			return;
-		++_k;
-		_word->resize(_k+1, shared_ptr<hpyp>(new hpyp(1)));
-		_letter->resize(_k+1, shared_ptr<vpyp>(new vpyp(_m)));
-		(*_word)[_k]->set_base((*_letter)[_k].get());
-		(*_letter)[_k]->set_v(_v);
-	}
+void ipcfg::_resize() {
+	if (_k+1 > _K)
+		return;
+	++_k;
+	_word->resize(_k+1, shared_ptr<hpyp>(new hpyp(1)));
+	_letter->resize(_k+1, shared_ptr<vpyp>(new vpyp(_m)));
+	(*_word)[_k]->set_base((*_letter)[_k].get());
+	(*_letter)[_k]->set_v(_v);
+}
 
-	void ipcfg::_shrink() {
-		--_k;
-		_word->pop_back();
-		_letter->pop_back();
-	}
+void ipcfg::_shrink() {
+	--_k;
+	_word->pop_back();
+	_letter->pop_back();
+}
