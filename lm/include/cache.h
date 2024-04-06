@@ -38,7 +38,6 @@ namespace npbnlp {
 			using lm_cache = std::unordered_map<const context*, std::unordered_map<int, double>, contexthash, contexteq>;
 #endif
 			lm_cache _c;
-			std::mutex _m;
 	};
 }
 

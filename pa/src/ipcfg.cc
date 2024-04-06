@@ -261,6 +261,8 @@ void ipcfg::_traceback(cyk& c, int i, int j, int z, vt& a, tree& tr, bool best) 
 				if (t)
 					h = t;
 				for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
+					if (z > max(*l, *r))
+						continue;
 					double lp_r = _nonterm->lp(*r, h);
 					context *s = _nonterm->h();
 					context *u = s->find(*r);
@@ -333,6 +335,8 @@ void ipcfg::_calc_nonterm(cyk& c, int i, int j, vt& a) {
 						s = u;
 				}
 				for (auto z = c.begin(i,j); z != c.end(i,j); ++z) {
+					if (*z > max(*l, *r))
+						continue;
 					double lp = _nonterm->lp(*z,s)+lp_l+lp_r;
 					if (lp < mu)
 						continue;

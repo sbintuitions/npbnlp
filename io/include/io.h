@@ -83,7 +83,6 @@ namespace npbnlp {
 				int len = str.size();
 				while (str[len-1] == '\n' || str[len-1] == '\r') {
 					str[len-1] = ' ';
-					std::cout << "swap_cr2ws:" << str[len-1] << std::endl;
 					--len;
 				}
 				while (len+1 < str.size() && str[len+1] == ' ') {
@@ -104,8 +103,13 @@ namespace npbnlp {
 					throw ex;
 				}
 			}
+			io();
+			io(io&& f);
+			io(const io& f);
 			io(const char *f);
 			io(std::istream& in);
+			io& operator=(const io& f);
+			io& operator=(io&& f) noexcept;
 			virtual ~io();
 			std::shared_ptr<std::vector<unsigned int> > raw;
 			std::vector<int> head;

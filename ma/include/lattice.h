@@ -21,11 +21,11 @@ namespace npbnlp {
 		S_KATAKANA = 21,
 		S_HIRA_KATA = 7,
 		S_HIRA_HANJI = 5,
-		S_KATA_HANJI = 10,
-		S_HIRA_KATA_HANJI = 7,
-		S_HANJI = 6,
-		S_KATA_OR_HIRA = 7,
-		S_SYNBOL = 10
+		S_KATA_HANJI = 5,//10,
+		S_HIRA_KATA_HANJI = 5,//7,
+		S_HANJI = 5,//6,
+		S_KATA_OR_HIRA = 5,//7,
+		S_SYNBOL = 1//10
 	};
 	class lattice {
 		public:
