@@ -14,18 +14,20 @@ namespace npbnlp {
 		// delimiter
 		// ':' = 58
 		// ' ' = 32
-		static int find(unsigned int delimiter, std::vector<unsigned int>& r, int offset) {
+		static int find(unsigned int delimiter, std::vector<unsigned int>& r, int offset, int end) {
 			if (offset >= r.size())
 				return r.size();
-			auto it = std::find(r.begin()+offset, r.end(), delimiter);
+			auto it = std::find(r.begin()+offset, r.begin()+end, delimiter);
 			if (it != r.end())
 				return it - r.begin();
 			else
-				return r.size();
+				return end;
+				//return r.size();
 		}
-		static int store_word(word& w, std::vector<unsigned int>& r, int head) {
+		static int store_word(word& w, std::vector<unsigned int>& r, int head, int tail) {
 			w.head = head;
-			int p = util::find(32, r, head);
+			//int p = util::find(32, r, head);
+			int p = util::find(32, r, head, tail);
 			w.len = p - head;
 			int pos = 0;
 			/*

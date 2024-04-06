@@ -13,7 +13,8 @@ sentence::sentence(vector<unsigned int>& d, int head, int tail) {
 	int i = head;
 	while (i < tail) {
 		word wd(d);
-		i = util::store_word(wd, d, i);
+		//i = util::store_word(wd, d, i);
+		i = util::store_word(wd, d, i, tail);
 		wd.id = dic->index(wd);
 		w.push_back(wd);
 	}

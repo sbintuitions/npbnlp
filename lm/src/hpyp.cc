@@ -503,9 +503,11 @@ void hpyp::_estimate_poisson() {
 	shared_ptr<generator> g = generator::create();
 	gamma_dist gm;
 	int z = 0;
+	/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:z)
 #endif
+*/
 	for (auto i = 0; i < chartype::n; ++i) {
 		gamma_dist::param_type param(a[i], 1./b[i]);
 		gm.param(param);

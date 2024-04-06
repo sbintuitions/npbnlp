@@ -102,6 +102,7 @@ void npylm::load(const char *file) {
 	} catch (const char *ex) {
 		throw ex;
 	}
+	fclose(fp);
 }
 
 sentence npylm::sample(io& f, int i) {

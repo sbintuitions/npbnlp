@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		int i = 0;
 		while (i < f.raw->size()) {
 			word w(*f.raw);
-			i = util::store_word(w, *f.raw, i);
+			i = util::store_word(w, *f.raw, i, f.raw->size());
 			w.id = dic->index(w);
 			s.push_back(w);
 		}

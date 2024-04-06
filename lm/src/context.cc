@@ -57,9 +57,11 @@ int context::cu(int k) const {
 	int n = 0;
 	if (it == _restaurant->cend())
 		return n;
+	/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:n)
 #endif
+*/
 	for (auto i = it->second->cbegin(); i != it->second->cend(); ++i) {
 		n += *i;
 	}
@@ -81,7 +83,7 @@ void context::set(int a, int b) {
 }
 
 context* context::find(int k) const {
-	const auto it = _child->find(k);
+	auto const it = _child->find(k);
 	if (it == _child->cend())
 		return NULL;
 	else
@@ -235,18 +237,22 @@ void context::estimate_d(vector<double>& a, vector<double>& b, lm *m) {
 	shared_ptr<generator> g = generator::create();
 	bernoulli_distribution d;
 	double y = 0;
+	/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:y)
 #endif
+*/
 	for (int i = 0; i < _table; ++i) {
 		bernoulli_distribution::param_type mu( m->strength(_n)/(m->strength(_n)+m->discount(_n)*i) );
 		y += 1. - d((*g)(), mu);
 	}
 	double z = 0;
 	for (auto it = _restaurant->begin(); it != _restaurant->end(); ++it) {
+		/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:z)
 #endif
+*/
 		for (auto c = it->second->begin(); c != it->second->end(); ++c) {
 			for (int j = 1; j < *c; ++j) {
 				bernoulli_distribution::param_type mu( ((double)j-1)/((double)j-m->discount(_n)) );
@@ -265,9 +271,11 @@ void context::estimate_t(vector<double>&a , vector<double>& b, lm *m) {
 	shared_ptr<generator> g = generator::create();
 	bernoulli_distribution d;
 	double y = 0;
+	/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:y)
 #endif
+*/
 	for (int i = 1; i < _table; ++i) {
 		bernoulli_distribution::param_type mu( m->strength(_n)/(m->strength(_n)+m->discount(_n)*i) );
 		y += d((*g)(), mu);

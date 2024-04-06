@@ -39,7 +39,6 @@ double cache::get(int k, const context *h, bool& chk) {
 }
 
 double cache::set(int k, const context *h, double lp) {
-	lock_guard<mutex> m(_m);
 #ifdef _OPENMP
 	_c[omp_get_thread_num()][h][k] = lp;
 	return _c[omp_get_thread_num()][h][k];
