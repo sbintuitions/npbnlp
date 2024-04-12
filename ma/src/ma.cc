@@ -315,7 +315,7 @@ int init(io& f, vector<sentence>& corpus) {
 		}
 		lm.estimate(1);
 		if (i)
-			lm.poisson_correction(1000);
+			lm.poisson_correction(100);
 	}
 	int rpad = 2*PBWIDTH;
 	printf("\r%*s", rpad,"");
