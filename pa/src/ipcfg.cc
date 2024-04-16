@@ -78,7 +78,7 @@ void ipcfg::load(const char *f) {
 		if (fread(&_v, sizeof(int), 1, fp) != 1)
 			throw "failed to read _v in ipcfg::load";
 		_nonterm->load(fp);
-		while (_word->size() < _k+1) {
+		while ((int)_word->size() < _k+1) {
 			_word->push_back(shared_ptr<hpyp>(new hpyp(1)));
 			_letter->push_back(shared_ptr<vpyp>(new vpyp(_m)));
 			(*_word)[_word->size()-1]->set_base((*_letter)[_word->size()-1].get());
@@ -105,7 +105,7 @@ tree ipcfg::sample(io& f, int i) {
 	}
 	for (auto l = 1; l < size; ++l) {
 		for (auto j = 0; j < size-l; ++j) {
-			double mu = c.mu[j][j+l];
+			//double mu = c.mu[j][j+l];
 			_calc_nonterm(c, j, j+l, dp);
 		}
 	}
@@ -132,7 +132,7 @@ tree ipcfg::parse(io& f, int i) {
 	}
 	for (auto l = 1; l < size; ++l) {
 		for (auto j = 0; j < size-l; ++j) {
-			double mu = c.mu[j][j+l];
+			//double mu = c.mu[j][j+l];
 			_calc_nonterm(c, j, j+l, dp);
 		}
 	}
@@ -377,7 +377,7 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 	double mu = log(be(_a, _b))+table[id];
 	//double mu = table[id];
 	l.mu[i][i] = mu;
-	for (auto j = 0; j < table.size(); ++j) {
+	for (auto j = 0; j < (int)table.size(); ++j) {
 		if (table[j] >= mu) {
 			l.k[i][i].insert(j+1);
 		}
@@ -422,7 +422,7 @@ void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 	double mu = log(be(_a, _b))+table[id];
 	//double mu = table[id];
 	c.mu[i][j] = mu;
-	for (auto m = 0; m < table.size(); ++m) {
+	for (auto m = 0; m < (int)table.size(); ++m) {
 		if (table[m] >= mu) {
 			c.k[i][j].insert(z[m]);
 		}

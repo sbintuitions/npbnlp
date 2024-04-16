@@ -24,7 +24,7 @@ clattice::clattice(nio& f, int i) {
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-	for (auto j = 0; j < wt.size(); ++j) {
+	for (auto j = 0; j < (int)wt.size(); ++j) {
 		type t = wt[j];
 		for (auto k = j; k >= 0 && j-k < _chsize(t, wt[k]); --k) {
 			chunk ch(*f.raw, head+k, 1+j-k);
@@ -39,35 +39,35 @@ clattice::~clattice() {
 }
 
 chunk& clattice::ch(int i, int len) {
-	if (i < 0 || i >= c.size())
+	if (i < 0 || i >= (int)c.size())
 		return eos;
-	if (len-1 >= c[i].size())
+	if (len-1 >= (int)c[i].size())
 		throw "invalid chunk size";
 	return c[i][len-1];
 }
 
 chunk* clattice::cp(int i, int len) {
-	if (i < 0 || i >= c.size())
+	if (i < 0 || i >= (int)c.size())
 		return &eos;
-	if (len-1 >= c[i].size())
+	if (len-1 >= (int)c[i].size())
 		throw "invalid chunk size";
 	return &c[i][len-1];
 }
 
 int clattice::size(int i) {
-	if (i < 0 || i >= c.size())
+	if (i < 0 || i >= (int)c.size())
 		return 1;
 	return c[i].size();
 }
 
 vector<int>::iterator clattice::begin(int i, int j) {
-	if (i < 0 || i >= k.size())
+	if (i < 0 || i >= (int)k.size())
 		return bos.begin();
 	return k[i][j].begin();
 }
 
 vector<int>::iterator clattice::end(int i, int j) {
-	if (i < 0 || i >= k.size())
+	if (i < 0 || i >= (int)k.size())
 		return bos.end();
 	return k[i][j].end();
 }

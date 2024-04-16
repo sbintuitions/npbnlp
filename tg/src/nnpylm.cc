@@ -118,7 +118,7 @@ void nnpylm::load(const char *file) {
 nsentence nnpylm::sample(nio& f, int i) {
 	clattice l(f, i);
 	vt dp;
-	for (auto t = 0; t < l.c.size(); ++t) {
+	for (auto t = 0; t < (int)l.c.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			const context *c = _chunk->h();
 			chunk& ch = l.ch(t, j+1);
@@ -163,7 +163,7 @@ nsentence nnpylm::sample(nio& f, int i) {
 nsentence nnpylm::parse(nio& f, int i) {
 	clattice l(f, i);
 	vt dp;
-	for (auto t = 0; t < l.c.size(); ++t) {
+	for (auto t = 0; t < (int)l.c.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			const context *c = _chunk->h();
 			chunk& ch = l.ch(t, j+1);

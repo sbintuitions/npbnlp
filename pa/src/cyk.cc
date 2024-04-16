@@ -7,7 +7,7 @@ static word eos;
 static vector<int> root(1, 0);
 
 cyk::cyk(io& f, int i):s(*f.raw, f.head[i], f.head[i+1]) {
-	int size = s.size();
+	//int size = s.size();
 	k.resize(s.size(), vector<set<int> >(s.size()));
 	mu.resize(s.size(), vector<double>(s.size(), 0));
 }
