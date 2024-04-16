@@ -1,4 +1,4 @@
-#include"ipcfg.h"
+#include"sr_ipcfg.h"
 #include"rd.h"
 #include"util.h"
 #include<cstdio>
@@ -29,8 +29,8 @@ static double b = 1;
 static int dot = 0;
 static string train;
 static string test;
-static string model("ipcfg.model");
-static string dic("pa.dic");
+static string model("spcfg.model");
+static string dic("sp.dic");
 static int node_id = 0;
 
 class dot_node {
@@ -271,9 +271,8 @@ int mcmc() {
 	io f(train.c_str());
 	vector<tree> corpus;
 	corpus.resize(f.head.size()-1);
-	ipcfg g(m);
+	spcfg g(m);
 	g.set(vocab, K);
-	g.slice(a, b);
 #ifdef _OPENMP
 	omp_set_num_threads(threads);
 #endif
@@ -297,7 +296,6 @@ int mcmc() {
 				if (j+t < corpus.size()) {
 					try {
 						tree tr = g.sample(f, rd[j+t]);
-						dump(tr, rd[j+t]);
 						corpus[rd[j+t]] = tr;
 					} catch (const char *ex) {
 						cerr << ex << endl;
@@ -327,6 +325,8 @@ int mcmc() {
 #pragma omp ordered
 #endif
 			progress("epoch", i, (double)(j+1)/corpus.size());
+			double a = (double)(i*corpus.size()+j)/(epoch*corpus.size());
+			g.anneal(a);
 		}
 		// estimate hyperparameter
 		g.estimate(20);
@@ -352,7 +352,7 @@ int parse() {
 	io f(test.c_str());
 	shared_ptr<wid> d = wid::create();
 	d->load(dic.c_str());
-	ipcfg g(m);
+	spcfg g(m);
 	try {
 		g.load(model.c_str());
 		g.set(vocab, K);
@@ -394,3 +394,4 @@ int main(int argc, char **argv) {
 	}
 	return 0;
 }
+

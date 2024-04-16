@@ -263,7 +263,7 @@ int init(nio& f, vector<nsentence>& corpus) {
 		}
 		chunker.estimate(1);
 		if (i)
-			chunker.poisson_correction(1000);
+			chunker.poisson_correction(100);
 	}
 	int rpad = 2*PBWIDTH;
 	printf("\r%*s", rpad, "");
@@ -282,7 +282,7 @@ int mcmc(nio& f, vector<nsentence>& corpus) {
 	for (auto i = 0; i < corpus.size(); ++i)
 		lm.init(corpus[rid[i]]);
 	lm.estimate(20);
-	lm.poisson_correction(1000);
+	lm.poisson_correction(100);
 	for (auto i = 0; i < epoch; ++i) {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());

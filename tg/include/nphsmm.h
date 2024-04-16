@@ -25,7 +25,7 @@ namespace npbnlp {
 			virtual int l();
 			virtual void slice(double a, double b);
 			virtual void estimate(int iter);
-			virtual void poisson_correction(int n = 3000);
+			virtual void poisson_correction(int n = 100);
 			virtual void save(const char *file);
 			virtual void load(const char *file);
 		protected:
