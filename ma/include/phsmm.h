@@ -30,8 +30,8 @@ namespace npbnlp {
 		protected:
 			int _n;
 			int _m;
-			int _k;
 			int _l;
+			int _k;
 			int _v;
 			int _K;
 			double _a;

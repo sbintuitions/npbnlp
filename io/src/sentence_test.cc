@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 		}
 		cout << "character ids:" << endl;
 		for (auto it = c.begin(); it != c.end(); ++it) {
-			for (int i = 0; i < it->w.size(); ++i) {
+			for (int i = 0; i < (int)it->w.size(); ++i) {
 				word& w = it->wd(i);
 				for (int j = -1; j <= (int)w.len; ++j) {
 					cout << j << ":" << w[j] << " ";

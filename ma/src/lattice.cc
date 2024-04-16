@@ -26,7 +26,7 @@ lattice::lattice(io& f, int i) {
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-	for (auto j = 0; j < ct.size(); ++j) {
+	for (auto j = 0; j < (int)ct.size(); ++j) {
 		type t = ct[j];
 		for (auto k = j; k >= 0 && j-k < _segsize(t, ct[k]); --k) {
 			word wd(*f.raw, head+k, 1+j-k);
@@ -42,23 +42,23 @@ lattice::~lattice() {
 }
 
 word& lattice::wd(int i, int len) {
-	if (i < 0 || i >= w.size())
+	if (i < 0 || i >= (int)w.size())
 		return eos;
-	if (len-1 >= w[i].size())
+	if (len-1 >= (int)w[i].size())
 		throw "invalid segment size";
 	return w[i][len-1];
 }
 
 word* lattice::wp(int i, int len) {
-	if (i < 0 || i >= w.size())
+	if (i < 0 || i >= (int)w.size())
 		return &eos;
-	if (len-1 >= w[i].size())
+	if (len-1 >= (int)w[i].size())
 		throw "invalid segment size";
 	return &w[i][len-1];
 }
 
 int lattice::size(int i) {
-	if (i < 0 || i >= w.size())
+	if (i < 0 || i >= (int)w.size())
 		return 1;
 	return w[i].size();
 }
@@ -68,26 +68,26 @@ void lattice::slice(int i, double u) {
 }
 
 double lattice::u(int i) {
-	if (i < 0 || i >= mu.size())
+	if (i < 0 || i >= (int)mu.size())
 		return 0;
 	return mu[i];
 }
 
 vector<int>::iterator lattice::sbegin(int i, int j) {
-	if (i < 0 || i >= k.size())
+	if (i < 0 || i >= (int)k.size())
 		return bos.begin();
 	return k[i][j].begin();
 }
 
 vector<int>::iterator lattice::send(int i, int j) {
-	if (i < 0 || i >= k.size())
+	if (i < 0 || i >= (int)k.size())
 		return bos.end();
 	return k[i][j].end();
 }
 
 /*
 bool lattice::skip(int i, int j) {
-	if (i < 0 || i >= check.size())
+	if (i < 0 || i >= (int)check.size())
 		return 0;
 	return (check[i][j]);
 }
@@ -103,7 +103,7 @@ int lattice::_segsize(type& t, type& u) {
 			} else if (t == U_KATA_HANJI) {
 				t = U_HIRA_KATA_HANJI;
 			} else if (t == U_KATA_OR_HIRA) {
-				t == U_HIRAGANA;
+				t = U_HIRAGANA;
 			} else if (t == U_HIRA_HANJI || t == U_HIRA_KATA || t == U_HIRA_KATA_HANJI) {
 			} else if (u != t) {
 				t = U_MISC;

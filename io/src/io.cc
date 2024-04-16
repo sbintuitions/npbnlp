@@ -85,7 +85,7 @@ io::io(io&& f):raw(nullptr) {
 
 io::io(const io& f):raw(nullptr) {
 	raw = f.raw;
-	for (auto i = 0; i < f.head.size(); ++i) {
+	for (auto i = 0; i < (int)f.head.size(); ++i) {
 		head.push_back(f.head[i]);
 	}
 }
@@ -104,7 +104,7 @@ io& io::operator=(const io& f) {
 	if (this == &f)
 		return *this;
 	raw = f.raw;
-	for (auto i = 0; i < f.head.size(); ++i) {
+	for (auto i = 0; i < (int)f.head.size(); ++i) {
 		head.push_back(f.head[i]);
 	}
 	return *this;

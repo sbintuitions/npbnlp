@@ -174,7 +174,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #endif
 	int rid[corpus.size()] = {0};
 	rd::shuffle(rid, corpus.size());
-	for (auto i = 0; i < corpus.size(); ++i)
+	for (auto i = 0; i < (int)corpus.size(); ++i)
 		lm.init(corpus[rid[i]]);
 	//for (auto it = corpus.begin(); it != corpus.end(); ++it) {
 	//	lm.init(*it);
@@ -184,17 +184,17 @@ int mcmc(io& f, vector<sentence>& corpus) {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());
 		int j = 0;
-		while (j < corpus.size()) {
+		while (j < (int)corpus.size()) {
 			// remove
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size())
+				if (j+t < (int)corpus.size())
 					lm.remove(corpus[rd[j+t]]);
 			}
 #ifdef _OPENMP
 #pragma omp parallel
 			{ // sample segmentations
 				auto t = omp_get_thread_num();
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						sentence s = lm.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -205,7 +205,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 			}
 #else
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						sentence s = lm.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -217,7 +217,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #endif
 			// add
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					lm.add(corpus[rd[j+t]]);
 				}
 			}
@@ -229,7 +229,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 		}
 		// estimate hyperparameter
 		lm.estimate(20);
-		lm.poisson_correction(1000);
+		lm.poisson_correction(100);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
@@ -257,7 +257,7 @@ int parse() {
 #ifdef _OPENMP
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < f.head.size()-1; ++i) {
+	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		sentence s = lm.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered
@@ -277,17 +277,17 @@ int init(io& f, vector<sentence>& corpus) {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());
 		int j = 0;
-		while (j < corpus.size()) {
+		while (j < (int)corpus.size()) {
 			if (i > 0)
 				for (auto t = 0; t < threads; ++t) {
-					if (j+t < corpus.size())
+					if (j+t < (int)corpus.size())
 						lm.remove(corpus[rd[j+t]]);
 				}
 #ifdef _OPENMP
 #pragma omp parallel
 			{
 				auto t = omp_get_thread_num();
-				if (j+t < corpus.size())
+				if (j+t < (int)corpus.size())
 					try {
 						sentence s = lm.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -307,7 +307,7 @@ int init(io& f, vector<sentence>& corpus) {
 			}
 #endif
 			for (auto t = 0; t < threads; ++t)
-				if (j+t < corpus.size())
+				if (j+t < (int)corpus.size())
 					lm.add(corpus[rd[j+t]]);
 			j += threads;
 			progress("init", i, (double)(i+1)/NPYLM_EPOCH);
@@ -315,7 +315,7 @@ int init(io& f, vector<sentence>& corpus) {
 		}
 		lm.estimate(1);
 		if (i)
-			lm.poisson_correction(1000);
+			lm.poisson_correction(100);
 	}
 	int rpad = 2*PBWIDTH;
 	printf("\r%*s", rpad,"");

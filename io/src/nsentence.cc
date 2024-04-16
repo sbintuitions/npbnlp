@@ -18,13 +18,13 @@ nsentence::~nsentence() {
 }
 
 int nsentence::operator[](int i) {
-	if (i < 0 || i >= c.size())
+	if (i < 0 || i >= (int)c.size())
 		return 0;
 	return c[i].id;
 }
 
 chunk& nsentence::ch(int i) {
-	if (i < 0 || i >= c.size()) {
+	if (i < 0 || i >= (int)c.size()) {
 		return eos;
 	}
 	return c[i];

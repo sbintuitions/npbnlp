@@ -57,7 +57,7 @@ void cid::save(const char *file) {
 	int size = _misn.size();
 	if (fwrite(&size, sizeof(int), 1, fp) != 1)
 		throw "failed to write _misn.size() in cid::save";
-	if (fwrite(&_misn[0], sizeof(int), size , fp) != size)
+	if (fwrite(&_misn[0], sizeof(int), size , fp) != (size_t)size)
 		throw "failed to write _misn in cid::save";
 	_store(fp);
 	fclose(fp);
@@ -74,13 +74,13 @@ bool cid::load(const char *file) {
 	if (fread(&size, sizeof(int), 1, fp) != 1)
 		throw "failed to read _misn.size() in cid::load";
 	_misn.resize(size);
-	if (fread(&_misn[0], sizeof(int), size, fp) != size)
+	if (fread(&_misn[0], sizeof(int), size, fp) != (size_t)size)
 		throw "failed to read _misn in cid::load";
 	int rawsize = 0;
 	if (fread(&rawsize, sizeof(int), 1, fp) != 1)
 		throw "failed to read _letter->size() in cid::load";
 	_letter->resize(rawsize);
-	if (fread(&(*_letter)[0], sizeof(unsigned int), rawsize, fp) != rawsize)
+	if (fread(&(*_letter)[0], sizeof(unsigned int), rawsize, fp) != (size_t)rawsize)
 		throw "failed to read _letter in cid::load";
 	int wsize = 0;
 	if (fread(&wsize, sizeof(int), 1, fp) != 1)
@@ -126,7 +126,7 @@ void cid::_store(FILE *fp) {
 	int lsize = _letter->size();
 	if (fwrite(&lsize, sizeof(int), 1, fp) != 1)
 		throw "failed to write size of raw in cid::_store";
-	if (fwrite(&(*_letter)[0], sizeof(unsigned int), lsize, fp) != lsize)
+	if (fwrite(&(*_letter)[0], sizeof(unsigned int), lsize, fp) != (size_t)lsize)
 		throw "failed to write raw data in cid::_store";
 	int wsize = _word->size();
 	if (fwrite(&wsize, sizeof(int), 1, fp) != 1)
@@ -137,7 +137,7 @@ void cid::_store(FILE *fp) {
 	int csize = d.size();
 	if (fwrite(&csize, sizeof(int), 1, fp) != 1)
 		throw "failed to write size of chunks in cid::_store";
-	for (auto i = 0; i < d.size(); ++i) {
+	for (auto i = 0; i < (int)d.size(); ++i) {
 		d[i].save(fp);
 		if (fwrite(&id[i], sizeof(int), 1, fp) != 1)
 			throw "failed to write chunk id in cid::_store";

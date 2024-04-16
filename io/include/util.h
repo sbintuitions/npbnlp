@@ -15,7 +15,7 @@ namespace npbnlp {
 		// ':' = 58
 		// ' ' = 32
 		static int find(unsigned int delimiter, std::vector<unsigned int>& r, int offset, int end) {
-			if (offset >= r.size())
+			if (offset >= (int)r.size())
 				return r.size();
 			auto it = std::find(r.begin()+offset, r.begin()+end, delimiter);
 			if (it != r.end())
@@ -29,7 +29,7 @@ namespace npbnlp {
 			//int p = util::find(32, r, head);
 			int p = util::find(32, r, head, tail);
 			w.len = p - head;
-			int pos = 0;
+			//int pos = 0;
 			/*
 			if ((pos = util::find(58, r, head)) < w.head+w.len) {
 				std::string num;
@@ -48,7 +48,7 @@ namespace npbnlp {
 		static void store_sentences(io& f, std::vector<sentence>& corpus) {
 			if (f.head.empty())
 				return;
-			for (int i = 0; i < f.head.size()-1; ++i) {
+			for (int i = 0; i < (int)f.head.size()-1; ++i) {
 				int s_head = f.head[i];
 				int s_tail = f.head[i+1];
 				sentence s(*f.raw, s_head, s_tail);

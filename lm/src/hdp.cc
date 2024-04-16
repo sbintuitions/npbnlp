@@ -455,7 +455,7 @@ void hdp::load(const char *file) {
 	if (fread(&_v, sizeof(int), 1, fp) != 1)
 		throw "failed to read _v in hdp::load";
 	_alpha->resize(_n);
-	if (fread(&(*_alpha)[0], sizeof(double), _n, fp) != _n)
+	if (fread(&(*_alpha)[0], sizeof(double), _n, fp) != (size_t)_n)
 		throw "failed to read _alpha in hdp::load";
 	_h->load(fp);
 	fclose(fp);
