@@ -166,7 +166,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #endif
 	int rid[corpus.size()] = {0};
 	rd::shuffle(rid, corpus.size());
-	for (auto i = 0; i < corpus.size(); ++i) {
+	for (auto i = 0; i < (int)corpus.size(); ++i) {
 		hmm.init(corpus[rid[i]]);
 		progress("init", i, (double)(i+1)/corpus.size());
 	}
@@ -177,17 +177,17 @@ int mcmc(io& f, vector<sentence>& corpus) {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());
 		int j = 0;
-		while (j < corpus.size()) {
+		while (j < (int)corpus.size()) {
 			// remove
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size())
+				if (j+t < (int)corpus.size())
 					hmm.remove(corpus[rd[j+t]]);
 			}
 #ifdef _OPENMP
 #pragma omp parallel
 			{ // sample segmentations
 				auto t = omp_get_thread_num();
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						sentence s = hmm.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -198,7 +198,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 			}
 #else
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						sentence s = hmm.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -210,7 +210,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 #endif
 			// add
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					hmm.add(corpus[rd[j+t]]);
 				}
 			}
@@ -250,7 +250,7 @@ int parse() {
 #ifdef _OPENMP
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < f.head.size()-1; ++i) {
+	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		sentence s = hmm.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered

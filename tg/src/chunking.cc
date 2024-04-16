@@ -145,7 +145,7 @@ int tokenize(io& f, vector<sentence>& c) {
 	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < f.head.size()-1; ++i) {
+	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		c[i] = lm.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered
@@ -191,10 +191,10 @@ int mcmc() {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());;
 		int j = 0;
-		while (j < corpus.size()) {
+		while (j < (int)corpus.size()) {
 			if (i > 0) {
 				for (auto t = 0; t < threads; ++t) {
-					if (j+t < corpus.size())
+					if (j+t < (int)corpus.size())
 						chunker.remove(corpus[rd[j+t]]);
 				}
 			}
@@ -202,7 +202,7 @@ int mcmc() {
 #pragma omp parallel
 			{
 				auto t = omp_get_thread_num();
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						nsentence s = chunker.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -213,7 +213,7 @@ int mcmc() {
 			}
 #else
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						nsentence s = chunker.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = s;
@@ -224,7 +224,7 @@ int mcmc() {
 			}
 #endif
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					chunker.add(corpus[rd[j+t]]);
 				}
 			}

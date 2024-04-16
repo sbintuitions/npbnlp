@@ -24,14 +24,14 @@ static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
 static int vocab = 50000;
-static double a = 1;
-static double b = 1;
+//static double a = 1;
+//static double b = 1;
 static int dot = 0;
 static string train;
 static string test;
 static string model("spcfg.model");
 static string dic("sp.dic");
-static int node_id = 0;
+//static int node_id = 0;
 
 class dot_node {
 	public:
@@ -260,7 +260,7 @@ void dump_all(vector<tree>& corpus) {
 		cout << "node [fontname=IPAPGothic]" << endl;
 		cout << "edge [fontname=IPAPGothic]" << endl;
 	}
-	for (auto i = 0; i < corpus.size(); ++i) {
+	for (auto i = 0; i < (int)corpus.size(); ++i) {
 		dump(corpus[i], i);
 	}
 	if (dot)
@@ -280,11 +280,11 @@ int mcmc() {
 		int rd[corpus.size()] = {0};
 		rd::shuffle(rd, corpus.size());
 		int j = 0;
-		while (j < corpus.size()) {
+		while (j < (int)corpus.size()) {
 			// remove
 			if (i > 0) {
 				for (auto t = 0; t < threads; ++t) {
-					if (j+t < corpus.size()) {
+					if (j+t < (int)corpus.size()) {
 						g.remove(corpus[rd[j+t]]);
 					}
 				}
@@ -293,7 +293,7 @@ int mcmc() {
 #pragma omp parallel
 			{ // sample segmentations
 				auto t = omp_get_thread_num();
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						tree tr = g.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = tr;
@@ -304,7 +304,7 @@ int mcmc() {
 			}
 #else
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					try {
 						tree tr = g.sample(f, rd[j+t]);
 						corpus[rd[j+t]] = tr;
@@ -316,7 +316,7 @@ int mcmc() {
 #endif
 			// add
 			for (auto t = 0; t < threads; ++t) {
-				if (j+t < corpus.size()) {
+				if (j+t < (int)corpus.size()) {
 					g.add(corpus[rd[j+t]]);
 				}
 			}
@@ -367,7 +367,7 @@ int parse() {
 #ifdef _OPENMP
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < f.head.size()-1; ++i) {
+	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		tree t = g.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered

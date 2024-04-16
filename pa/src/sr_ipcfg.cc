@@ -81,7 +81,7 @@ void spcfg::load(const char *f) {
 		if (fread(&_v, sizeof(int), 1, fp) != 1)
 			throw "failed to read _v in scpfg::load";
 		_nonterm->load(fp);
-		while (_word->size() < _k+1) {
+		while ((int)_word->size() < _k+1) {
 			_word->push_back(shared_ptr<hpyp>(new hpyp(1)));
 			_letter->push_back(shared_ptr<vpyp>(new vpyp(_m)));
 			(*_word)[_word->size()-1]->set_base((*_letter)[_word->size()-1].get());

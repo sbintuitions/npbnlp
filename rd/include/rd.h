@@ -32,11 +32,11 @@ namespace npbnlp {
 				if (t.size() == 1)
 					return 0;
 				double z = 0;
-				for (int i = 0; i < t.size(); ++i)
+				for (int i = 0; i < (int)t.size(); ++i)
 					z = math::lse(z, t[i], (i == 0));
 				std::vector<double> p(t.size(), 0);
 				double c = 0;
-				for (int i = 0; i < t.size(); ++i) {
+				for (int i = 0; i < (int)t.size(); ++i) {
 					p[i] = std::exp(t[i]-z);
 					c += p[i];
 				}
@@ -47,7 +47,7 @@ namespace npbnlp {
 					return 0;
 				double m = t[0];
 				int j = 0;
-				for (int i = 1; i < t.size(); ++i) {
+				for (int i = 1; i < (int)t.size(); ++i) {
 					if (m < t[i]) {
 						m = t[i];
 						j = i;

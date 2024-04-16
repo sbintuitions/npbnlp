@@ -247,7 +247,7 @@ sentence ihmm::sample(io& f, int i) {
 	hlattice l(f, i);
 	vt dp;
 	_slice(l);
-	for (auto t = 0; t < l.k.size(); ++t) {
+	for (auto t = 0; t < (int)l.k.size(); ++t) {
 		for (auto it = l.begin(t); it!= l.end(t); ++it) {
 			int k = *it;
 			const context *h = _pos->h();
@@ -297,7 +297,7 @@ sentence ihmm::parse(io& f, int i) {
 	hlattice l(f, i);
 	vt dp;
 	_slice(l, true);
-	for (auto t = 0; t < l.k.size(); ++t) {
+	for (auto t = 0; t < (int)l.k.size(); ++t) {
 		for (auto it = l.begin(t); it!= l.end(t); ++it) {
 			int k = *it;
 			const context *h = _pos->h();
@@ -383,7 +383,7 @@ void ihmm::_backward(hlattice& l, int i, double mu, const context *c, word& w, i
 void ihmm::_slice(hlattice& l, bool best) {
 	beta_distribution be;
 	shared_ptr<generator> g = generator::create();
-	for (auto t = 0; t < l.k.size(); ++t) {
+	for (auto t = 0; t < (int)l.k.size(); ++t) {
 		context *h = _pos->h();
 		for (auto j = 1; j < _n; ++j) {
 			word& w = l.s.wd(t-j);
@@ -411,7 +411,7 @@ void ihmm::_slice(hlattice& l, bool best) {
 		double mu = log(be(_a, _b))+table[id];
 		l.slice(t, mu);
 		wd.pos = id+1;
-		for (auto i = 0; i < table.size(); ++i) {
+		for (auto i = 0; i < (int)table.size(); ++i) {
 			if (table[i] >= mu)
 				l.k[t].push_back(i+1);
 		}

@@ -126,7 +126,7 @@ void nphsmm::load(const char *file) {
 		if (fread(&_b, sizeof(double), 1, fp) != 1)
 			throw "failed to read _b in nphsmm::load";
 		_class->load(fp);
-		while (_chunk->size() < _k+1) {
+		while ((int)_chunk->size() < _k+1) {
 			int k = _chunk->size();
 			_chunk->push_back(shared_ptr<hpyp>(new hpyp(_n)));
 			_word->push_back(shared_ptr<hpyp>(new hpyp(_m)));
@@ -275,7 +275,7 @@ nsentence nphsmm::parse(nio& f, int i) {
 	clattice l(f, i);
 	vt dp;
 	_slice(l);
-	for (auto t = 0; t < l.c.size(); ++t) {
+	for (auto t = 0; t < (int)l.c.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			chunk& ch = l.ch(t, j+1);
 			for (auto k = l.begin(t, j); k != l.end(t, j); ++k) {
@@ -350,7 +350,7 @@ nsentence nphsmm::sample(nio& f, int i) {
 	clattice l(f, i);
 	vt dp;
 	_slice(l);
-	for (auto t = 0; t < l.c.size(); ++t) {
+	for (auto t = 0; t < (int)l.c.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			chunk& ch = l.ch(t, j+1);
 			for (auto k = l.begin(t, j); k != l.end(t, j); ++k) {
@@ -478,7 +478,7 @@ void nphsmm::_backward(clattice& l, int i, const context *c, const context *z, c
 void nphsmm::_slice(clattice& l) {
 	beta_distribution be;
 	shared_ptr<generator> g = generator::create();
-	for (auto t = 0; t < l.c.size(); ++t) {
+	for (auto t = 0; t < (int)l.c.size(); ++t) {
 		for (auto c = l.c[t].begin(); c != l.c[t].end(); ++c) {
 			double z = 0;
 			vector<double> table;
@@ -492,7 +492,7 @@ void nphsmm::_slice(clattice& l) {
 			}
 			int id = rd::ln_draw(table);
 			double mu = log(be(_a, _b))+table[id];
-			for (auto i = 0; i < table.size(); ++i) {
+			for (auto i = 0; i < (int)table.size(); ++i) {
 				if (table[i] >= mu)
 					l.k[t][c->len-1].push_back(i+1);
 			}
