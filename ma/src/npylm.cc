@@ -109,7 +109,7 @@ sentence npylm::sample(io& f, int i) {
 	lattice l(f, i);
 	vt dp;
 	// forward filtering backward sampling
-	for (auto t = 0; t < l.w.size(); ++t) {
+	for (auto t = 0; t < (int)l.w.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			const context *c = _word->h();
 			word& w = l.wd(t, j+1);
@@ -154,7 +154,7 @@ sentence npylm::sample(io& f, int i) {
 sentence npylm::parse(io& f, int i) {
 	lattice l(f, i);
 	vt dp;
-	for (auto t = 0; t < l.w.size(); ++t) {
+	for (auto t = 0; t < (int)l.w.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			const context *c = _word->h();
 			word& w = l.wd(t, j+1);

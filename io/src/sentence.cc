@@ -18,21 +18,21 @@ sentence::sentence(vector<unsigned int>& d, int head, int tail) {
 		wd.id = dic->index(wd);
 		w.push_back(wd);
 	}
-	n.resize(w.size(), 0);
+	n.resize(w.size()+1, 0);
 }
 
 sentence::~sentence() {
 }
 
 int sentence::operator[](int i) {
-	if (i < 0 || i >= w.size())
+	if (i < 0 || i >= (int)w.size())
 		return 0; // bos/eos
 	return w[i].id;
 }
 
 
 word& sentence::wd(int i) {
-	if (i < 0 || i >= w.size()) {
+	if (i < 0 || i >= (int)w.size()) {
 		return eos;
 	}
 	return w[i];

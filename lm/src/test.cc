@@ -12,7 +12,7 @@ using namespace npbnlp;
 double perplexity(vector<sentence>& c, hpyp *lm) {
 	double ll = 0;
 	int v = 0;
-	int n = lm->n();
+	//int n = lm->n();
 	for (auto it = c.begin(); it != c.end(); ++it) {
 		v += it->size();
 		for (int i = 0; i < it->size(); ++i) {
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 		for (auto i = 0; i < 100; ++i) {
 			int rd[c.size()] = {0};
 			rd::shuffle(rd, c.size());
-			for (auto j = 0; j < c.size(); ++j) {
+			for (auto j = 0; j < (int)c.size(); ++j) {
 			//for (auto it = c.begin(); it != c.end(); ++it) {
 				if (i > 0) {
 					wrap::remove(c[rd[j]], &l);

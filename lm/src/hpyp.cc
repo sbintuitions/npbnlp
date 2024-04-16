@@ -38,6 +38,7 @@ hpyp& hpyp::operator=(const hpyp& lm) {
 	_a = lm._a;
 	_b = lm._b;
 	_v = lm._v;
+	_h = lm._h;
 	_bc = lm._bc;
 	_cbc = lm._cbc;
 	_discount = lm._discount;
@@ -54,6 +55,7 @@ hpyp& hpyp::operator=(const hpyp&& lm) noexcept {
 	_a = lm._a;
 	_b = lm._b;
 	_v = lm._v;
+	_h = lm._h;
 	_bc = lm._bc;
 	_cbc = lm._cbc;
 	_discount = lm._discount;
@@ -126,16 +128,16 @@ void hpyp::load(FILE *fp) {
 		throw "failed to read _v in hpyp::load";
 	_discount->resize(_n);
 	_strength->resize(_n);
-	if (fread(&(*_discount)[0], sizeof(double), _n, fp) != _n)
+	if (fread(&(*_discount)[0], sizeof(double), _n, fp) != (size_t)_n)
 		throw "failed to read _discount in hpyp::load";
-	if (fread(&(*_strength)[0], sizeof(double), _n, fp) != _n)
+	if (fread(&(*_strength)[0], sizeof(double), _n, fp) != (size_t)_n)
 		throw "failed to read _strength in hpyp::load";
 	int poisson_size = 0;
 	if (fread(&poisson_size, sizeof(int), 1, fp) != 1)
 		throw "failed to read size of poisson_ddist in hpyp::load";
 	if (poisson_size) {
 		_lambda = shared_ptr<vector<double> >(new vector<double>(poisson_size, 0));
-		if (fread(&(*_lambda)[0], sizeof(double), poisson_size, fp) != poisson_size)
+		if (fread(&(*_lambda)[0], sizeof(double), poisson_size, fp) != (size_t)poisson_size)
 			throw "failed to read _poisson in hpyp::load";
 		if (fread(&_f, sizeof(int),1,fp) != 1)
 			throw "failed to read length_dist denominator in hpyp::load";
@@ -143,7 +145,7 @@ void hpyp::load(FILE *fp) {
 		if (fread(&n, sizeof(int), 1, fp) != 1)
 			throw "failed to number of length_dist in hpyp::load";
 		_length = shared_ptr<vector<double> >(new vector<double>(n, 0.));
-		if (fread(&(*_length)[0], sizeof(double), n, fp) != n)
+		if (fread(&(*_length)[0], sizeof(double), n, fp) != (size_t)n)
 			throw "failed to read _length in hpyp::load";
 
 	}
@@ -430,7 +432,7 @@ double hpyp::_correct(word& w) const {
 	type t = wordtype::get(w);
 	poisson_distribution po;
 	double lp = po.lp((*_lambda)[t], w.len);
-	if (w.len < _length->size())
+	if (w.len < (int)_length->size())
 		lp -= (*_length)[w.len];
 	else if (_f)
 		lp += log(_f);
@@ -471,7 +473,7 @@ void hpyp::_estimate_length(int n) {
 	}
 	for (auto i = 0; i < n; ++i) {
 		word w(k[i], 1, (int)k[i].size()-1);
-		if (_length->size() <= w.len) {
+		if ((int)_length->size() <= w.len) {
 			_length->resize(w.len+1, 1.); // init by 1: add one smoothing
 			++_f;
 		}
@@ -481,7 +483,7 @@ void hpyp::_estimate_length(int n) {
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-	for (auto i = 0; i < _length->size(); ++i) {
+	for (auto i = 0; i < (int)_length->size(); ++i) {
 		if ((*_length)[i])
 			(*_length)[i] = log((*_length)[i])-log(_f);
 		else if (_f)
@@ -502,7 +504,7 @@ void hpyp::_estimate_poisson() {
 	_h->estimate_l(a, b, _bc.get());
 	shared_ptr<generator> g = generator::create();
 	gamma_dist gm;
-	int z = 0;
+	//int z = 0;
 	/*
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:z)
@@ -549,8 +551,9 @@ void hpyp::add(chunk& c, context *h) {
 
 bool hpyp::remove(int k, context *h) {
 	bool remove_from_parent = false;
-	while (h && (remove_from_parent = h->remove(k)))
+	while (h && (remove_from_parent = h->remove(k))){
 		h = h->parent();
+	}
 	_cache.clear();
 	return remove_from_parent;
 }
@@ -563,8 +566,9 @@ void hpyp::remove(word& w, context *h) {
 		word& b = (*_bc)[w.id][id];
 		wrap::remove_a(b, _base);
 		(*_bc)[w.id].erase((*_bc)[w.id].begin()+id);
-		if ((*_bc)[w.id].empty())
+		if ((*_bc)[w.id].empty()) {
 			_bc->erase(w.id);
+		}
 	}
 	if (_bc->empty())
 		_bc = nullptr;
@@ -588,6 +592,7 @@ void hpyp::remove(chunk& c, context *h) {
 }
 
 void hpyp::estimate(int iter) {
+	_h->cleanup();
 	beta_distribution be;
 	gamma_dist gm;
 	shared_ptr<generator> g = generator::create();
@@ -708,6 +713,7 @@ int hpyp::draw_n(sentence& sq, int i) {
 			ln_pr_stop = -log(2);
 			ln_pr_pass += -log(2);
 		}
+		table.push_back(lp_cache+ln_pr_stop+ln_pr_pass);
 	} while (i-j >= -1 && j++ < _n);
 	return 1+rd::ln_draw(table);
 }
@@ -731,6 +737,7 @@ int hpyp::draw_n(nsentence& sq, int i) {
 			ln_pr_stop = -log(2);
 			ln_pr_pass += -log(2);
 		}
+		table.push_back(lp_cache+ln_pr_stop+ln_pr_pass);
 	} while (i-j >= -1 && j++ < _n);
 	return 1+rd::ln_draw(table);
 }

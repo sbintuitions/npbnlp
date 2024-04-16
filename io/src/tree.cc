@@ -24,7 +24,7 @@ tree::~tree() {
 }
 
 node& tree::operator[](int i) {
-	if (i < 0 || i >= c.size())
+	if (i < 0 || i >= (int)c.size())
 		return blank;
 	return c[i];
 }

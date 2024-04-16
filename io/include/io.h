@@ -69,7 +69,7 @@ namespace npbnlp {
 				}
 			}
 			static void swap_cr2ws(char *str) {
-				int len = std::strlen(str);
+				size_t len = std::strlen(str);
 				while (*(str+len-1) == '\n' || *(str+len-1) == '\r') {
 					*(str+len-1) = ' ';
 					--len;
@@ -85,7 +85,7 @@ namespace npbnlp {
 					str[len-1] = ' ';
 					--len;
 				}
-				while (len+1 < str.size() && str[len+1] == ' ') {
+				while (len+1 < (int)str.size() && str[len+1] == ' ') {
 					str[len+1] = '\0';
 					++len;
 				}

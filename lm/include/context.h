@@ -18,6 +18,7 @@ namespace npbnlp {
 			context* parent() const;
 			context* find(int k) const;
 			context* make(int k);
+			void cleanup();
 			int n() const;
 			int a() const;
 			int b() const;

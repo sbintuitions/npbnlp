@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 		shared_ptr<wid> dic = wid::create();
 		vector<word> s;
 		int i = 0;
-		while (i < f.raw->size()) {
+		while (i < (int)f.raw->size()) {
 			word w(*f.raw);
 			i = util::store_word(w, *f.raw, i, f.raw->size());
 			w.id = dic->index(w);

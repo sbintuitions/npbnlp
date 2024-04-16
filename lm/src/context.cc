@@ -141,6 +141,20 @@ int context::v() const {
 	return _restaurant->size();
 }
 
+void context::cleanup() {
+	auto it = _child->begin();
+	while (it != _child->end()) {
+		it->second->cleanup();
+		if (it->second->c() == 0) {
+			auto tgt = it;
+			++it;
+			_child->erase(tgt);
+		} else {
+			++it;
+		}
+	}
+}
+
 int context::sample(lm *m) {
 	context *h = this;
 	for (; h->_parent;)
@@ -181,7 +195,7 @@ bool context::_crp_add(int k, lm *m) {
 	z += table[size];
 	int id = rd::draw(z, table);
 	if (id == size) { // sit down new table
-		lock_guard<mutex> m(_mutex);
+		lock_guard<mutex> mtx(_mutex);
 		r.push_back(1);
 		++_table;
 		return true;
@@ -203,17 +217,19 @@ bool context::_crp_remove(int k) {
 		z += table[i];
 	}
 	int id = rd::draw(z, table);
-	lock_guard<mutex> m(_mutex);
 	r[id]--;
 	if (r[id] == 0) {
+		lock_guard<mutex> m(_mutex);
 		--_table;
 		r.erase(r.begin()+id);
-		if (r.size() == 0) {
+		if (r.empty()) {
 			_restaurant->erase(k);
 		}
-		if (_restaurant->size() == 0) // this context has no customer 
+		/*
+		if (_restaurant->empty()) // this context has no customer 
 			if (_parent)
 				_parent->_child->erase(_k);
+		*/
 		return true;
 	}
 	return false;
@@ -241,7 +257,7 @@ void context::estimate_d(vector<double>& a, vector<double>& b, lm *m) {
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:y)
 #endif
-*/
+	 */
 	for (int i = 0; i < _table; ++i) {
 		bernoulli_distribution::param_type mu( m->strength(_n)/(m->strength(_n)+m->discount(_n)*i) );
 		y += 1. - d((*g)(), mu);
@@ -252,7 +268,7 @@ void context::estimate_d(vector<double>& a, vector<double>& b, lm *m) {
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:z)
 #endif
-*/
+		 */
 		for (auto c = it->second->begin(); c != it->second->end(); ++c) {
 			for (int j = 1; j < *c; ++j) {
 				bernoulli_distribution::param_type mu( ((double)j-1)/((double)j-m->discount(_n)) );
@@ -275,7 +291,7 @@ void context::estimate_t(vector<double>&a , vector<double>& b, lm *m) {
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:y)
 #endif
-*/
+	 */
 	for (int i = 1; i < _table; ++i) {
 		bernoulli_distribution::param_type mu( m->strength(_n)/(m->strength(_n)+m->discount(_n)*i) );
 		y += d((*g)(), mu);
@@ -315,7 +331,7 @@ void context::save(FILE *fp) {
 		int tables = it->second->size();
 		if (fwrite(&tables, sizeof(int), 1, fp) != 1)
 			throw "failed to write restaurant::table_size in context::save";
-		if (fwrite(&(*it->second)[0], sizeof(int), tables, fp) != tables)
+		if (fwrite(&(*it->second)[0], sizeof(int), tables, fp) != (size_t)tables)
 			throw "failed to write restaurant::table in context::save";
 
 	}
@@ -358,7 +374,7 @@ void context::load(FILE *fp) {
 			throw "failed to read restaurant::table_size in context::load";
 		vector<int>& r = *_get_restaurant(key);
 		r.resize(tables);
-		if (fread(&r[0], sizeof(int), tables, fp) != tables)
+		if (fread(&r[0], sizeof(int), tables, fp) != (size_t)tables)
 			throw "failed to read restaurant::table in context::load";
 	}
 	int childs;

@@ -60,7 +60,7 @@ void wid::save(const char *file) {
 	int size = _misn.size();
 	if (fwrite(&size, sizeof(int), 1, fp) != 1)
 		throw "failed to write _misn.size() in wid::save";
-	if (fwrite(&_misn[0], sizeof(int), size, fp) != size)
+	if (fwrite(&_misn[0], sizeof(int), size, fp) != (size_t)size)
 		throw "failed to write _misn in wid::save";
 	_store(fp);
 	fclose(fp);
@@ -82,13 +82,13 @@ bool wid::load(const char *file) {
 	if (fread(&size, sizeof(int), 1, fp) != 1)
 		throw "failed to read _misn.size() in wid::load";
 	_misn.resize(size);
-	if (fread(&_misn[0], sizeof(int), size, fp) != size)
+	if (fread(&_misn[0], sizeof(int), size, fp) != (size_t)size)
 		throw "failed to read _misn in wid::load";
 	int rawsize = 0;
 	if (fread(&rawsize, sizeof(int), 1, fp) != 1)
 		throw "failed to read _raw size in wid::load";
 	_letter->resize(rawsize);
-	if (fread(&(*_letter)[0], sizeof(unsigned int), rawsize, fp) != rawsize)
+	if (fread(&(*_letter)[0], sizeof(unsigned int), (size_t)rawsize, fp) != (size_t)rawsize)
 		throw "failed to read _raw in wid::load";
 	int dicsize = 0;
 	if (fread(&dicsize, sizeof(unsigned int), 1, fp) != 1)
@@ -129,12 +129,12 @@ void wid::_store(FILE *fp) {
 	int size = _letter->size();
 	if (fwrite(&size, sizeof(int), 1, fp) != 1)
 		throw "failed to write size of raw in wid::_store";
-	if (fwrite(&(*_letter)[0], sizeof(unsigned int), size, fp) != size)
+	if (fwrite(&(*_letter)[0], sizeof(unsigned int), size, fp) != (size_t)size)
 		throw "failed to write raw data in wid::_store";
 	int wsize = d.size();
 	if (fwrite(&wsize, sizeof(int), 1, fp) != 1)
 		throw "failed to write size of indices in wid::_store";
-	for (auto i = 0; i < d.size(); ++i) {
+	for (auto i = 0; i < (int)d.size(); ++i) {
 		d[i].save(fp);
 		if (fwrite(&id[i], sizeof(int), 1, fp) != 1)
 			throw "failed to write word id in wid::_store";
@@ -192,7 +192,7 @@ word& word::operator=(const word& w) {
 	n = w.n;
 	_doc = w._doc;
 	m.resize(w.m.size());
-	for (auto i = 0; i < w.m.size(); ++i)
+	for (auto i = 0; i < (int)w.m.size(); ++i)
 		m[i] = w.m[i];
 
 	return *this;
@@ -244,7 +244,7 @@ void word::save(FILE *fp) {
 	int msize = m.size();
 	if (fwrite(&msize, sizeof(int), 1, fp) != 1)
 		throw "failed to write word.m.size()";
-	if (fwrite(&m[0], sizeof(int), msize, fp) != msize)
+	if (fwrite(&m[0], sizeof(int), msize, fp) != (size_t)msize)
 		throw "failed to write word.m";
 }
 
@@ -265,7 +265,7 @@ void word::load(FILE *fp, vector<unsigned int>& r) {
 	if (fread(&msize, sizeof(int), 1, fp) != 1)
 		throw "failed to read word.m.size()";
 	m.resize(msize);
-	if (fread(&m[0], sizeof(int), msize, fp) != msize)
+	if (fread(&m[0], sizeof(int), msize, fp) != (size_t)msize)
 		throw "failed to read word.m";
 	_doc = &r;
 }

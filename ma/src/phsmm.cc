@@ -119,7 +119,7 @@ void phsmm::load(const char *file) {
 		if (fread(&_K, sizeof(int), 1, fp) != 1)
 			throw "failed to read _K in phsmm::load";
 		_pos->load(fp);
-		while (_word->size() < _k+1) {
+		while ((int)_word->size() < _k+1) {
 			_word->push_back(shared_ptr<hpyp>(new hpyp(_n)));
 			_letter->push_back(shared_ptr<vpyp>(new vpyp(_m)));
 			(*_word)[_word->size()-1]->set_base((*_letter)[_word->size()-1].get());
@@ -313,7 +313,7 @@ sentence phsmm::parse(io& f, int i) {
 	// slice
 	_slice(l);
 	// forward filtering
-	for (auto t = 0; t < l.w.size(); ++t) {
+	for (auto t = 0; t < (int)l.w.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			/*
 			if (l.skip(t,j))
@@ -415,7 +415,7 @@ sentence phsmm::sample(io& f, int i) {
 	// slice
 	_slice(l);
 	// forward filtering
-	for (auto t = 0; t < l.w.size(); ++t) {
+	for (auto t = 0; t < (int)l.w.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			/*
 			if (l.skip(t,j))
@@ -573,7 +573,7 @@ void phsmm::_backward(lattice& l, int i, const context *c, const context *t, wor
 void phsmm::_slice(lattice& l) {
 	beta_distribution be;
 	shared_ptr<generator> g = generator::create();
-	for (auto t = 0; t < l.w.size(); ++t) {
+	for (auto t = 0; t < (int)l.w.size(); ++t) {
 		// marginarize \sum_k p(c_{t-j+1}^t, k)
 		//vector<double> lpw;
 		for (auto w = l.w[t].begin(); w != l.w[t].end(); ++w) {
@@ -600,7 +600,7 @@ void phsmm::_slice(lattice& l) {
 			//w->pos = rd::ln_draw(table)+1;
 			int id = rd::ln_draw(table);
 			double mu = log(be(_a, _b))+table[id];
-			for (auto i = 0; i < table.size(); ++i) {
+			for (auto i = 0; i < (int)table.size(); ++i) {
 				if (table[i] >= mu)
 					l.k[t][w->len-1].push_back(i+1);
 			}

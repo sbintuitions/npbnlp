@@ -20,7 +20,7 @@ namespace npbnlp {
 							else if (t == U_KATA_HANJI)
 								t = U_HIRA_KATA_HANJI;
 							else if (t == U_KATA_OR_HIRA)
-								t == U_HIRAGANA;
+								t = U_HIRAGANA;
 							else if (t == U_HIRA_HANJI || t == U_HIRA_KATA || t == U_HIRA_KATA_HANJI)
 								;
 							else if (u != t)
@@ -69,7 +69,7 @@ namespace npbnlp {
 				int i = 0;
 				for (; w[i] == 0; ++i);
 				type t = chartype::get(w[i]);
-				for (; i < w.size(); ++i) {
+				for (; i < (int)w.size(); ++i) {
 					if (w[i] == 0)
 						break;
 					type u = chartype::get(w[i]);
@@ -82,7 +82,7 @@ namespace npbnlp {
 							else if (t == U_KATA_HANJI)
 								t = U_HIRA_KATA_HANJI;
 							else if (t == U_KATA_OR_HIRA)
-								t == U_HIRAGANA;
+								t = U_HIRAGANA;
 							else if (t == U_HIRA_HANJI || t == U_HIRA_KATA || t == U_HIRA_KATA_HANJI)
 								;
 							else if (u != t)

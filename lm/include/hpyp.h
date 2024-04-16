@@ -62,7 +62,7 @@ namespace npbnlp {
 			void set_base(hpyp *b);
 			void set_v(int v);
 			void estimate(int iter);
-			void poisson_correction(int n = 3000);
+			void poisson_correction(int n = 1000);
 			void gibbs(int iter);
 			void save(const char *file);
 			void load(const char *file);
