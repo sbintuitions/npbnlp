@@ -38,7 +38,7 @@ spcfg::~spcfg() {
 }
 
 void spcfg::anneal(double a) {
-	if (a <= 0. || a > 1.)
+	if (a <= 0.)
 		return;
 	_annl = _annl/(_annl*a);
 }
