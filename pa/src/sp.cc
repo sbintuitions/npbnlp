@@ -333,7 +333,7 @@ int mcmc() {
 #pragma omp ordered
 #endif
 			progress("epoch", i, (double)(j+1)/corpus.size());
-			double a = min(1.,(double)(i*corpus.size()+j)/(epoch*corpus.size()));
+			double a = min(1.,(double)(i*corpus.size()+j)/(anneal*corpus.size()));
 			g.anneal(a);
 		}
 		// estimate hyperparameter
