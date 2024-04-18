@@ -46,9 +46,9 @@ namespace npbnlp {
 				return w;
 			}
 			static int i2c(unsigned int c, char *buf) {
-				int size = 0;
+				int size = io::u8size((char*)&c);
 				unsigned char *w = (unsigned char*)&c;
-				for (int i = 0; *(w+i) != 0; ++i, ++size) {
+				for (int i = 0; i < size; ++i) {
 					*(buf+i) = *(w+i);
 				}
 				*(buf+size) = '\0';
