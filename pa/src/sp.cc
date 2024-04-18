@@ -22,6 +22,7 @@ static int k = 20;
 static int K = 100; // base measure for transition
 static int threads = 4;
 static int epoch = 500;
+static int anneal = 0.2*epoch;
 static int dmp = 0;
 static int vocab = 50000;
 //static double a = 1;
@@ -59,6 +60,7 @@ void usage(int argc, char **argv) {
 	cout << "-m, --letter_order=int(default 20)\n";
 	cout << "-k, --max_category=int(default 100)\n";
 	cout << "-e, --epoch=int(default 500)\n";
+	cout << "-a, --anneal=int(default 100)\n";
 	cout << "-t, --threads=int(default 4)\n";
 	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
 	cout << "--dot=flag output in dot format for graphviz" << endl;
@@ -80,6 +82,8 @@ int read_long_param(const char *opt, const char *arg) {
 		K = atoi(arg);
 		k = min(k, K);
 	} else if (check(opt, "epoch")) {
+		epoch = atoi(arg);
+	} else if (check(opt, "anneal")) {
 		epoch = atoi(arg);
 	} else if (check(opt, "threads")) {
 		threads = atoi(arg);
@@ -111,6 +115,7 @@ int read_param(int argc, char **argv) {
 			{"letter_order", required_argument, 0, 0},
 			{"max_category", required_argument, 0, 0},
 			{"epoch", required_argument, 0, 0},
+			{"anneal", required_argument, 0, 0},
 			{"threads", required_argument, 0, 0},
 			{"dump", required_argument, 0, 0},
 			{"vocab", required_argument, 0, 0},
@@ -119,7 +124,7 @@ int read_param(int argc, char **argv) {
 			{0, 0, 0, 0}
 		};
 		int option_index = 0;
-		c = getopt_long(argc, argv, "m:k:e:t:v:", long_options, &option_index);
+		c = getopt_long(argc, argv, "m:k:e:t:v:a:", long_options, &option_index);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -137,6 +142,9 @@ int read_param(int argc, char **argv) {
 				break;
 			case 'e':
 				epoch = atoi(optarg);
+				break;
+			case 'a':
+				anneal = atoi(optarg);
 				break;
 			case 't':
 				threads = atoi(optarg);
@@ -325,7 +333,7 @@ int mcmc() {
 #pragma omp ordered
 #endif
 			progress("epoch", i, (double)(j+1)/corpus.size());
-			double a = (double)(i*corpus.size()+j)/(epoch*corpus.size());
+			double a = min(1.,(double)(i*corpus.size()+j)/(anneal*corpus.size()));
 			g.anneal(a);
 		}
 		// estimate hyperparameter

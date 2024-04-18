@@ -296,7 +296,7 @@ bool spcfg::_sample_tree(cyk& l, bool best) {
 		q.push_back(make_pair(i,i));
 	}
 	while (!q.empty()) {
-		spcfg::cell& rc = q.front();
+		spcfg::cell rc = q.front();
 		if (s.empty()) {
 			s.push(rc);
 			q.pop_front();
@@ -315,8 +315,8 @@ bool spcfg::_sample_tree(cyk& l, bool best) {
 		}
 	}
 	while (s.size() > 1) {
-		spcfg::cell& rc = s.top(); s.pop();
-		spcfg::cell& lc = s.top(); s.pop();
+		spcfg::cell rc = s.top(); s.pop();
+		spcfg::cell lc = s.top(); s.pop();
 		int z = _sample_nonterm(l, lc, rc, best);
 		if (z < 0)
 			return false;
