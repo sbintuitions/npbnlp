@@ -265,7 +265,7 @@ int parse() {
 	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < f.head.size()-1; ++i) {
+	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		nsentence s = chunker.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered
