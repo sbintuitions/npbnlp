@@ -96,6 +96,13 @@ void ipcfg::load(const char *f) {
 
 tree ipcfg::sample(io& f, int i) {
 	cyk c(f, i);
+	if (c.s.size() == 1) {
+		tree t(c.s);
+		t[0].k = 0;
+		t[0].i = 0;
+		t[0].j = 0;
+		return t;
+	}
 	vt dp;
 	_slice(c);
 	// inside
@@ -123,6 +130,13 @@ tree ipcfg::sample(io& f, int i) {
 
 tree ipcfg::parse(io& f, int i) {
 	cyk c(f, i);
+	if (c.s.size() == 1) {
+		tree t(c.s);
+		t[0].k = 0;
+		t[0].i = 0;
+		t[0].j = 0;
+		return t;
+	}
 	vt dp;
 	_slice(c);
 	// inside
