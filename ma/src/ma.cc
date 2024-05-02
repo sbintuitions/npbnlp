@@ -170,6 +170,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 	lm.set(vocab, K);
 	lm.slice(a, b);
 #ifdef _OPENMP
+	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
 #endif
 	int rid[corpus.size()] = {0};

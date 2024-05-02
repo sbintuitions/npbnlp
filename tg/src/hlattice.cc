@@ -35,7 +35,7 @@ word* hlattice::wp(int i) {
 }
 
 int hlattice::size(int i) {
-	if (i < 0 || i >= k.size())
+	if (i < 0 || i >= (int)k.size())
 		return 1;
 	return k[i].size();
 }

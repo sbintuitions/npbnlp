@@ -14,7 +14,7 @@ using namespace npbnlp;
 
 static unordered_map<int, int> tfreq;
 
-spcfg::spcfg():_m(20), _k(20), _K(K), _v(C), _a(1), _b(1), _annl(50000), _nonterm(new hpyp(3)), _word(new vector<shared_ptr<hpyp> >), _letter(new vector<shared_ptr<vpyp> >) {
+spcfg::spcfg():_m(20), _k(20), _K(K), _v(C), _a(1), _b(1), _annl(10000), _nonterm(new hpyp(3)), _word(new vector<shared_ptr<hpyp> >), _letter(new vector<shared_ptr<vpyp> >) {
 	_nonterm->set_v(_K);
 	for (auto i = 0; i < _k+1; ++i) {
 		_word->push_back(shared_ptr<hpyp>(new hpyp(1)));
@@ -24,7 +24,7 @@ spcfg::spcfg():_m(20), _k(20), _K(K), _v(C), _a(1), _b(1), _annl(50000), _nonter
 	}
 }
 
-spcfg::spcfg(int m):_m(m), _k(20), _K(K), _v(C), _a(1), _b(1), _annl(50000), _nonterm(new hpyp(3)), _word(new vector<shared_ptr<hpyp> >), _letter(new vector<shared_ptr<vpyp> >) {
+spcfg::spcfg(int m):_m(m), _k(20), _K(K), _v(C), _a(1), _b(1), _annl(10000), _nonterm(new hpyp(3)), _word(new vector<shared_ptr<hpyp> >), _letter(new vector<shared_ptr<vpyp> >) {
 	_nonterm->set_v(_K);
 	for (auto i = 0; i < _k+1; ++i) {
 		_word->push_back(shared_ptr<hpyp>(new hpyp(1)));
