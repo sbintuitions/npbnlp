@@ -151,6 +151,7 @@ int mcmc() {
 	npylm lm(n, m);
 	lm.set(vocab);
 #ifdef _OPENMP
+	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
 #endif
 	for (auto i = 0; i < epoch; ++i) {
@@ -207,7 +208,7 @@ int mcmc() {
 		// estimate hyperparameter
 		lm.estimate(20);
 		if (i)
-			lm.poisson_correction(100);
+			lm.poisson_correction(1000);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)

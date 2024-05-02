@@ -275,6 +275,7 @@ int mcmc() {
 	g.set(vocab, K);
 	g.slice(a, b);
 #ifdef _OPENMP
+	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
 #endif
 	for (auto i = 0; i < epoch; ++i) {
@@ -297,7 +298,7 @@ int mcmc() {
 				if (j+t < (int)corpus.size()) {
 					try {
 						tree tr = g.sample(f, rd[j+t]);
-						dump(tr, rd[j+t]);
+						//dump(tr, rd[j+t]);
 						corpus[rd[j+t]] = tr;
 					} catch (const char *ex) {
 						cerr << ex << endl;

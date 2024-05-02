@@ -142,6 +142,7 @@ int tokenize(io& f, vector<sentence>& c) {
 	lm.load(tokenizer.c_str());
 	c.resize(f.head.size()-1);
 #ifdef _OPENMP
+	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
