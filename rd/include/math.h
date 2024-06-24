@@ -7,7 +7,7 @@
 namespace npbnlp {
 	class math {
 		public:
-			static double lse(double x, double y, double f=false) {
+			static double lse(double x, double y, bool f=false) {
 				if (f)
 					return y;
 				if (x == y)
@@ -18,7 +18,18 @@ namespace npbnlp {
 				if (diff > 50)
 					return max;
 				else
-					return max+std::log(1.+std::exp(min-max));
+			return max+std::log(1.+std::exp(min-max));
+			}
+			static double lde(double x, double y, bool f=false){
+				if (f)
+					return y;
+				double min = std::min(x, y);
+				double max = std::max(x, y);
+				double diff = max - min;
+				if (diff > 50)
+					return max;
+				else
+			return max+std::log(1.-std::exp(min-max));
 			}
 
 	};

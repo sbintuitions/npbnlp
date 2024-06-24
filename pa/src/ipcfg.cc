@@ -368,6 +368,107 @@ void ipcfg::_slice(cyk& l) {
 	for (auto i = 0; i < l.s.size(); ++i) {
 		_slice_preterm(l, i);
 	}
+	shared_ptr<generator> g = generator::create();
+	//non terminal
+	for (auto m = 1; m < l.s.size()-1; ++m) {
+		int len = l.s.size()-m;
+		uniform_int_distribution<> v(0, len-1);
+		int p = v((*g)());
+		// draw nu for slice non-terminal
+		double nu = _draw(l, p, p+m);
+		// slice non-terminals
+		for (auto i = 0; i < l.s.size()-m; ++i) {
+			if (i == p)
+				continue;
+			_slice_nonterm(l, i, i+m, nu);
+		}
+	}
+	// root
+	_slice_root(l);
+}
+
+double ipcfg::_draw(cyk& c, int i, int j) {
+	beta_distribution be;
+	vector<double> table;
+	vector<int> z;
+	for (auto k = i; k < j; ++k) {
+		for (auto l = c.begin(i,k); l != c.end(i,k); ++l) {
+			double lp_l = _nonterm->lp(*l, _nonterm->h());
+			context *h = _nonterm->h();
+			context *t = h->find(*l);
+			if (t)
+				h = t;
+			for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
+				double lp_r = _nonterm->lp(*r, h);
+				context *s = _nonterm->h();
+				context *u = s->find(*r);
+				if (u) {
+					s = u;
+					u = s->find(*l);
+					if (u)
+						s = u;
+				}
+				for (auto m = max(*l,*r); m > 0; --m) {
+					double lp = _nonterm->lp(m,s)+lp_l+lp_r;
+					table.push_back(lp);
+					z.push_back(m);
+				}
+			}
+		}
+	}
+	int id = rd::rd::ln_draw(table);
+	double mu = log(be(_a,_b))+table[id];
+	c.mu[i][j] = mu;
+	for (auto m = 0; m < (int)table.size(); ++m) {
+		if (table[m] >= mu)
+			c.k[i][j].insert(z[m]);
+	}
+	return mu;
+}
+
+void ipcfg::_slice_nonterm(cyk& c, int i, int j, double mu) {
+	vector<double> table;
+	vector<int> z;
+	for (auto k = i; k < j; ++k) {
+		for (auto l = c.begin(i,k); l != c.end(i,k); ++l) {
+			double lp_l = _nonterm->lp(*l, _nonterm->h());
+			context *h = _nonterm->h();
+			context *t = h->find(*l);
+			if (t)
+				h = t;
+			for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
+				double lp_r = _nonterm->lp(*r, h);
+				context *s = _nonterm->h();
+				context *u = s->find(*r);
+				if (u) {
+					s = u;
+					u = s->find(*l);
+					if (u)
+						s = u;
+				}
+				for (auto m = max(*l, *r); m > 0; --m) {
+					double lp = _nonterm->lp(m,s)+lp_l+lp_r;
+					table.push_back(lp);
+					z.push_back(m);
+				}
+			}
+		}
+	}
+	// P(B,C|A) := P(A->B C|A)
+	// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
+	c.mu[i][j] = mu;
+	for (auto m = 0; m < (int)table.size(); ++m) {
+		if (table[m] >= mu) {
+			c.k[i][j].insert(z[m]);
+		}
+	}
+}
+/*
+void ipcfg::_slice(cyk& l) {
+	// terminal
+	for (auto i = 0; i < l.s.size(); ++i) {
+		_slice_preterm(l, i);
+	}
 	// non terminal
 	for (auto m = 1; m < l.s.size()-1; ++m) {
 		for (auto i = 0; i < l.s.size()-m; ++i) {
@@ -377,6 +478,7 @@ void ipcfg::_slice(cyk& l) {
 	// root
 	_slice_root(l);
 }
+*/
 
 void ipcfg::_slice_preterm(cyk& l, int i) {
 	beta_distribution be;
@@ -398,6 +500,7 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 	}
 }
 
+/*
 void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 	beta_distribution be;
 	//shared_ptr<generator> g = generator::create();
@@ -442,6 +545,7 @@ void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
 		}
 	}
 }
+*/
 
 void ipcfg::_slice_root(cyk& c) {
 	beta_distribution be;
