@@ -46,6 +46,7 @@ namespace npbnlp {
 			void _slice_preterm(cyk& l, int i);
 			//void _slice_nonterm(cyk& c, int i, int j);
 			double _draw(cyk& c, int i, int j);
+			double _marginalize(cyk& c, int i, int j);
 			void _slice_nonterm(cyk& c, int i, int j, double mu);
 			void _slice_root(cyk& c);
 			void _resize();

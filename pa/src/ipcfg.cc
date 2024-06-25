@@ -368,13 +368,21 @@ void ipcfg::_slice(cyk& l) {
 	for (auto i = 0; i < l.s.size(); ++i) {
 		_slice_preterm(l, i);
 	}
-	shared_ptr<generator> g = generator::create();
+	vector<double> table;
+	for (auto i = 0; i < l.s.size()-1; ++i) {
+		table.push_back(_marginalize(l,i,i+1));
+	}
+	int p = rd::ln_draw(table);
+	//shared_ptr<generator> g = generator::create();
+	//uniform_int_distribution<> u(0, l.s.size()-2);
+	//int p = u((*g)());
 	//non terminal
 	for (auto m = 1; m < l.s.size()-1; ++m) {
-		int len = l.s.size()-m;
-		uniform_int_distribution<> v(0, len-1);
-		int p = v((*g)());
+		//int len = l.s.size()-m;
+		//uniform_int_distribution<> v(0, len-1);
+		//int p = v((*g)());
 		// draw nu for slice non-terminal
+		//double nu = _draw(l, p, p+m);
 		double nu = _draw(l, p, p+m);
 		// slice non-terminals
 		for (auto i = 0; i < l.s.size()-m; ++i) {
@@ -382,9 +390,53 @@ void ipcfg::_slice(cyk& l) {
 				continue;
 			_slice_nonterm(l, i, i+m, nu);
 		}
+		vector<double> cand;
+		if (p > 0) {
+			cand.push_back(_marginalize(l,p-1,p+m));
+		}
+		if (p+m < l.s.size()-1) {
+			cand.push_back(_marginalize(l,p,p+m+1));
+		}
+		if (cand.size() > 1) {
+			int id = rd::ln_draw(cand);
+			if (id == 0) {
+				p -= 1;
+			}
+		} else if (p > 0) {
+			p -= 1;
+		}
 	}
 	// root
 	_slice_root(l);
+}
+
+double ipcfg::_marginalize(cyk& c, int i, int j) {
+	double z = 0;
+	for (auto k = i; k < j; ++k) {
+		for (auto l = c.begin(i,k); l != c.end(i,k); ++l) {
+			double lp_l = _nonterm->lp(*l, _nonterm->h());
+			context *h = _nonterm->h();
+			context *t = h->find(*l);
+			if (t)
+				h = t;
+			for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
+				double lp_r = _nonterm->lp(*r, h);
+				context *s = _nonterm->h();
+				context *u = s->find(*r);
+				if (u) {
+					s = u;
+					u = s->find(*l);
+					if (u)
+						s = u;
+				}
+				for (auto m = max(*l,*r); m > 0; --m) {
+					double lp =_nonterm->lp(m,s)+lp_l+lp_r;
+					math::lse(z,lp,(z==0.));
+				}
+			}
+		}
+	}
+	return z;
 }
 
 double ipcfg::_draw(cyk& c, int i, int j) {
@@ -416,7 +468,7 @@ double ipcfg::_draw(cyk& c, int i, int j) {
 			}
 		}
 	}
-	int id = rd::rd::ln_draw(table);
+	int id = rd::ln_draw(table);
 	double mu = log(be(_a,_b))+table[id];
 	c.mu[i][j] = mu;
 	for (auto m = 0; m < (int)table.size(); ++m) {
@@ -464,19 +516,19 @@ void ipcfg::_slice_nonterm(cyk& c, int i, int j, double mu) {
 	}
 }
 /*
-void ipcfg::_slice(cyk& l) {
-	// terminal
-	for (auto i = 0; i < l.s.size(); ++i) {
-		_slice_preterm(l, i);
-	}
-	// non terminal
-	for (auto m = 1; m < l.s.size()-1; ++m) {
-		for (auto i = 0; i < l.s.size()-m; ++i) {
-			_slice_nonterm(l, i, i+m);
-		}
-	}
-	// root
-	_slice_root(l);
+   void ipcfg::_slice(cyk& l) {
+// terminal
+for (auto i = 0; i < l.s.size(); ++i) {
+_slice_preterm(l, i);
+}
+// non terminal
+for (auto m = 1; m < l.s.size()-1; ++m) {
+for (auto i = 0; i < l.s.size()-m; ++i) {
+_slice_nonterm(l, i, i+m);
+}
+}
+// root
+_slice_root(l);
 }
 */
 
@@ -501,49 +553,49 @@ void ipcfg::_slice_preterm(cyk& l, int i) {
 }
 
 /*
-void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
-	beta_distribution be;
-	//shared_ptr<generator> g = generator::create();
-	vector<double> table;
-	vector<int> z;
-	for (auto k = i; k < j; ++k) {
-		for (auto l = c.begin(i,k); l != c.end(i,k); ++l) {
-			double lp_l = _nonterm->lp(*l, _nonterm->h());
-			context *h = _nonterm->h();
-			context *t = h->find(*l);
-			if (t)
-				h = t;
-			for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
-				double lp_r = _nonterm->lp(*r, h);
-				context *s = _nonterm->h();
-				context *u = s->find(*r);
-				if (u) {
-					s = u;
-					u = s->find(*l);
-					if (u)
-						s = u;
-				}
-				//for (auto m = 1; m < _k+1; ++m) {
-				for (auto m = max(*l,*r); m > 0; --m) {
-					double lp = _nonterm->lp(m, s)+lp_l+lp_r;
-					table.push_back(lp);
-					z.push_back(m);
-				}
-			}
-		}
-	}
-	// P(B,C|A) := P(A->B C|A)
-	// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
-	// draw A ~ P(A,B,C) for a threshold at cell_{i,j}
-	int id = rd::ln_draw(table);
-	double mu = log(be(_a, _b))+table[id];
-	//double mu = table[id];
-	c.mu[i][j] = mu;
-	for (auto m = 0; m < (int)table.size(); ++m) {
-		if (table[m] >= mu) {
-			c.k[i][j].insert(z[m]);
-		}
-	}
+   void ipcfg::_slice_nonterm(cyk& c, int i, int j) {
+   beta_distribution be;
+//shared_ptr<generator> g = generator::create();
+vector<double> table;
+vector<int> z;
+for (auto k = i; k < j; ++k) {
+for (auto l = c.begin(i,k); l != c.end(i,k); ++l) {
+double lp_l = _nonterm->lp(*l, _nonterm->h());
+context *h = _nonterm->h();
+context *t = h->find(*l);
+if (t)
+h = t;
+for (auto r = c.begin(k+1,j); r != c.end(k+1,j); ++r) {
+double lp_r = _nonterm->lp(*r, h);
+context *s = _nonterm->h();
+context *u = s->find(*r);
+if (u) {
+s = u;
+u = s->find(*l);
+if (u)
+s = u;
+}
+//for (auto m = 1; m < _k+1; ++m) {
+for (auto m = max(*l,*r); m > 0; --m) {
+double lp = _nonterm->lp(m, s)+lp_l+lp_r;
+table.push_back(lp);
+z.push_back(m);
+}
+}
+}
+}
+// P(B,C|A) := P(A->B C|A)
+// P(B,C|A) \propto P(B,C,A) = P(A|B,C)P(B,C)
+// draw A ~ P(A,B,C) for a threshold at cell_{i,j}
+int id = rd::ln_draw(table);
+double mu = log(be(_a, _b))+table[id];
+//double mu = table[id];
+c.mu[i][j] = mu;
+for (auto m = 0; m < (int)table.size(); ++m) {
+if (table[m] >= mu) {
+c.k[i][j].insert(z[m]);
+}
+}
 }
 */
 
