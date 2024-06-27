@@ -187,8 +187,17 @@ void tree_node(tree& t, int i, vector<dot_node>& n) {
 		nd.left = left;
 		nd.right = right;
 		char buf[1024] = {0};
-		sprintf(buf, "%d", c.k);
+		sprintf(buf, "%d:", c.k);
 		nd.label = buf;
+		for (auto i = c.i; i <= c.j; ++i) {
+			word& w = t.wd(i);
+			for (auto l = 0; l < w.len; ++l) {
+				char wbuf[5] = {0};
+				io::i2c(w[l], wbuf);
+				nd.label += wbuf;
+			}
+			nd.label += " ";
+		}
 		n.push_back(nd);
 		tree_node(t, left, n);
 		tree_node(t, right, n);
@@ -222,6 +231,7 @@ void dump_dot(tree& t, int n) {
 				str += "\\";
 			str += buf;
 		}
+		str += " ";
 	}
 	vector<dot_node> nodes;
 	//cout << "digraph {" << endl;
@@ -232,6 +242,9 @@ void dump_dot(tree& t, int n) {
 	tree_node(t, t.s.size()-1, nodes);
 	// label
 	for (auto i = nodes.begin(); i != nodes.end(); ++i) {
+		if (i->label[i->label.size()-1] == '\\') {
+			i->label += "\\";
+		}
 		cout << "n" << n << "_" << i->id << " [label=\"" << i->label << "\"]" << endl;
 	}
 	// edge
@@ -336,9 +349,9 @@ int mcmc() {
 			cout << endl;
 			//for (auto s = corpus.begin(); s != corpus.end(); ++s)
 			/*
-			for (auto s = 0; s < corpus.size(); ++s)
-				dump(corpus[s], s);
-				*/
+			   for (auto s = 0; s < corpus.size(); ++s)
+			   dump(corpus[s], s);
+			   */
 			dump_all(corpus);
 		}
 	}
