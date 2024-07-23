@@ -190,12 +190,10 @@ void phsmm::init(sentence& s) {
 		for (int j = 1; j < _l; ++j) {
 			word& w = s.wd(i-j);
 			p = p->make(w.pos);
-			/*
-			context *q = p->make(w.pos);
-			if (!q)
-				break;
-			p = q;
-			*/
+			//context *q = p->make(w.pos);
+			//if (!q)
+			//	break;
+			//p = q;
 		}
 		vector<double> table;
 		for (int k = 1; k < _k+1; ++k) {

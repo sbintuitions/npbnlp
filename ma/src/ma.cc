@@ -10,7 +10,7 @@
 #define check(opt,arg) (strcmp(opt,arg) == 0)
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
-#define NPYLM_EPOCH 100
+#define NPYLM_EPOCH 200
 
 using namespace std;
 using namespace npbnlp;
@@ -23,9 +23,9 @@ static int K = 50; // base measure for transition
 static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
-static int vocab = 50000;
+static int vocab = 5000;
 static double a = 1;
-static double b = 1;
+static double b = 5;
 static string train;
 static string test;
 static string model("phsmm.model");
@@ -52,6 +52,8 @@ void usage(int argc, char **argv) {
 	cout << "-e, --epoch=int(default 500)\n";
 	cout << "-t, --threads=int(default 4)\n";
 	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
+	cout << "-a double(default 1), parameter of beta distribution for slice" << endl;
+	cout << "-b double(default 5), parameter of beta distribution for slice" << endl;
 	exit(1);
 }
 
@@ -111,7 +113,7 @@ int read_param(int argc, char **argv) {
 			{0, 0, 0, 0}
 		};
 		int option_index = 0;
-		c = getopt_long(argc, argv, "n:m:l:k:e:t:v:", long_options, &option_index);
+		c = getopt_long(argc, argv, "n:m:l:k:e:t:v:a:b:", long_options, &option_index);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -141,6 +143,12 @@ int read_param(int argc, char **argv) {
 				break;
 			case 'v':
 				vocab = atoi(optarg);
+				break;
+			case 'a':
+				a = atof(optarg);
+				break;
+			case 'b':
+				b = atof(optarg);
 				break;
 			case '?':
 			default:
@@ -230,7 +238,7 @@ int mcmc(io& f, vector<sentence>& corpus) {
 		}
 		// estimate hyperparameter
 		lm.estimate(20);
-		lm.poisson_correction(100);
+		lm.poisson_correction(5000);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
@@ -311,12 +319,14 @@ int init(io& f, vector<sentence>& corpus) {
 				if (j+t < (int)corpus.size())
 					lm.add(corpus[rd[j+t]]);
 			j += threads;
-			progress("init", i, (double)(i+1)/NPYLM_EPOCH);
 
 		}
-		lm.estimate(1);
-		if (i)
-			lm.poisson_correction(100);
+		lm.estimate(20);
+		/*
+		   if (i)
+		   lm.poisson_correction(100);
+		   */
+		progress("init", i, (double)(i+1)/NPYLM_EPOCH);
 	}
 	int rpad = 2*PBWIDTH;
 	printf("\r%*s", rpad,"");
