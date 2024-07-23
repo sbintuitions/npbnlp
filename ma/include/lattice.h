@@ -8,7 +8,7 @@
 #include<set>
 namespace npbnlp {
 	enum segsize {
-		S_MISC = 5,
+		S_MISC = 1,
 		S_ARABIC = 13,
 		S_LATIN = 13,
 		S_THAI = 6,
@@ -21,11 +21,11 @@ namespace npbnlp {
 		S_KATAKANA = 21,
 		S_HIRA_KATA = 7,
 		S_HIRA_HANJI = 5,
-		S_KATA_HANJI = 5,//10,
-		S_HIRA_KATA_HANJI = 5,//7,
-		S_HANJI = 5,//6,
-		S_KATA_OR_HIRA = 5,//7,
-		S_SYNBOL = 1//10
+		S_KATA_HANJI = 10,
+		S_HIRA_KATA_HANJI = 7,
+		S_HANJI = 6,
+		S_KATA_OR_HIRA = 1,//5,//7,
+		S_SYNBOL = 10
 	};
 	class lattice {
 		public:
@@ -44,7 +44,7 @@ namespace npbnlp {
 			std::vector<std::vector<std::vector<int> > > k;
 			//std::vector<std::vector<int> > check;
 		protected:
-			int _segsize(type& t, type& u);
+			int _segsize(type& t, type& u, int& chn);
 	};
 
 }
