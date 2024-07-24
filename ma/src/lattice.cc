@@ -28,8 +28,10 @@ lattice::lattice(io& f, int i) {
 #endif
 	for (auto j = 0; j < (int)ct.size(); ++j) {
 		type t = ct[j];
-		for (auto k = j; k >= 0 && j-k < _segsize(t, ct[k]); --k) {
+		int chn = 0;
+		for (auto k = j; k >= 0 && j-k < _segsize(t, ct[k], chn); --k) {
 			word wd(*f.raw, head+k, 1+j-k);
+			//cout << wd << endl;
 			wd.id = (*dic)[wd];
 			w[j].push_back(wd);
 		}
@@ -93,7 +95,11 @@ bool lattice::skip(int i, int j) {
 }
 */
 
-int lattice::_segsize(type& t, type& u) {
+int lattice::_segsize(type& t, type& u, int& chn) {
+	if (t != u)
+		++chn;
+	if (chn > 1)
+		return 0;
 	switch (u) {
 		case U_HIRAGANA:
 			if (t == U_KATAKANA) {
@@ -147,38 +153,55 @@ int lattice::_segsize(type& t, type& u) {
 	}
 	switch (t) {
 		case U_ARABIC:
+			//cout << "ARABIC:" << S_ARABIC << endl;
 			return S_ARABIC;
 		case U_GREEK:
+			//cout << "GREEK:" << S_GREEK << endl;
 			return S_GREEK;
 		case U_HANGUL:
+			//cout << "HANGUL:" << S_HANGUL << endl;
 			return S_HANGUL;
 		case U_HEBREW:
+			//cout << "HEBREW:" << S_HEBREW << endl;
 			return S_HEBREW;
 		case U_LATIN:
+			//cout << "LATIN:" << S_LATIN << endl;
 			return S_LATIN;
 		case U_MYANMAR:
+			//cout << "MYANMAR:" << S_MYANMAR << endl;
 			return S_MYANMAR;
 		case U_THAI:
+			//cout << "THAI:" << S_THAI << endl;
 			return S_THAI;
 		case U_DIGIT:
+			//cout << "DIGIT:" << S_DIGIT << endl;
 			return S_DIGIT;
 		case U_HIRAGANA:
+			//cout << "HIRAGANA:" << S_HIRAGANA << endl;
 			return S_HIRAGANA;
 		case U_KATAKANA:
+			//cout << "KATAKANA:" << S_KATAKANA << endl;
 			return S_KATAKANA;
 		case U_HANJI:
+			//cout << "HANJI:" << S_HANJI << endl;
 			return S_HANJI;
 		case U_HIRA_KATA:
+			//cout << "HIRA_KATA:" << S_HIRA_KATA << endl;
 			return S_HIRA_KATA;
 		case U_HIRA_HANJI:
+			//cout << "HIRA_HANJI:" << S_HIRA_HANJI << endl;
 			return S_HIRA_HANJI;
 		case U_KATA_HANJI:
+			//cout << "KATA_HANJI:" << S_KATA_HANJI << endl;
 			return S_KATA_HANJI;
 		case U_HIRA_KATA_HANJI:
+			//cout << "HIRA_KATA_HANJI:" << S_HIRA_KATA_HANJI << endl;
 			return S_HIRA_KATA_HANJI;
 		case U_SYNBOL:
+			//cout << "SYNBOL:" << S_SYNBOL << endl;
 			return S_SYNBOL;
 		default:
+			//cout << "MISC:" << S_MISC << endl;
 			return S_MISC;
 	}
 }
