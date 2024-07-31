@@ -208,7 +208,7 @@ int mcmc() {
 		// estimate hyperparameter
 		lm.estimate(20);
 		if (i)
-			lm.poisson_correction(1000);
+			lm.poisson_correction(5000);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
