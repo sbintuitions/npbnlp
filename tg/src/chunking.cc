@@ -237,7 +237,7 @@ int mcmc() {
 		}
 		chunker.estimate(20);
 		if (i)
-			chunker.poisson_correction();
+			chunker.poisson_correction(5000);
 		if (dmp && (i+1)%dmp == 0) {
 			cout << endl;
 			for (auto s = corpus.begin(); s != corpus.end(); ++s)
