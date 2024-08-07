@@ -24,6 +24,7 @@ static int K = 500;
 static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
+static int tokenized = 0;
 static int vocab = 50000;
 static double a = 1;
 static double b = 5;
@@ -55,6 +56,7 @@ void usage(int argc, char **argv) {
 	cout << "-e, --epoch=int(default 500)\n";
 	cout << "-t, --threads=int(default 4)\n";
 	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
+	cout << "--tokenized=bool(default 0)\n";
 	cout << "-a double(default 1), parameter of beta distribution for slice" << endl;
 	cout << "-b double(default 5), parameter of beta distribution for slice" << endl;
 	exit(1);
@@ -119,6 +121,7 @@ int read_param(int argc, char **argv) {
 			{"threads", required_argument, 0, 0},
 			{"dump", required_argument, 0, 0},
 			{"vocab", required_argument, 0, 0},
+			{"tokenized", no_argument, &tokenized, 1},
 			{0, 0, 0, 0}
 		};
 		int option_index = 0;
@@ -382,7 +385,11 @@ int main(int argc, char **argv) {
 		if (!train.empty()) {
 			io g(train.c_str());
 			vector<sentence> ws;
-			tokenize(g, ws);
+			if (tokenized) {
+				util::store_sentences(g, ws);
+			} else {
+				tokenize(g, ws);
+			}
 			nio f(ws);
 			vector<nsentence> corpus(f.head.size()-1);
 			init(f, corpus);
@@ -391,7 +398,11 @@ int main(int argc, char **argv) {
 		if (!test.empty()) {
 			io g(test.c_str());
 			vector<sentence> ws;
-			tokenize(g, ws);
+			if (tokenized) {
+				util::store_sentences(g, ws);
+			} else {
+				tokenize(g, ws);
+			}
 			nio f(ws);
 			parse(f);
 		}

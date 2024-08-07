@@ -24,6 +24,35 @@ namespace npbnlp {
 				return end;
 				//return r.size();
 		}
+		static int rfind(unsigned int delimiter, std::vector<unsigned int>& r, int offset, int end) {
+			if (offset >= (int)r.size())
+				return r.size();
+			for (auto it = r.begin()+end; it != r.begin()+offset; --it) {
+				if (*it == delimiter)
+					return it - r.begin();
+			}
+			return end;
+		}
+		static int store_word_with_pos(word& w, std::vector<unsigned int>& r, int head, int tail) {
+			w.head = head;
+			int p = util::find(32, r, head, tail);
+			w.len = p - head;
+			int pos = 0;
+			if ((pos = util::rfind(58, r, head, p)) < p) {
+				std::string num;
+				for (int i = pos+1; i < p; ++i) {
+					char buf[5] = {0};
+					io::i2c(r[i], buf);
+					num += buf;
+				}
+				w.len = pos - head;
+				w.pos = std::atoi(num.c_str());
+			} else {
+				return -1; // not found
+			}
+			w.m.resize(w.len+1, 0);
+			return p+1;
+		}
 		static int store_word(word& w, std::vector<unsigned int>& r, int head, int tail) {
 			w.head = head;
 			//int p = util::find(32, r, head);
