@@ -17,6 +17,7 @@ static int n = 2;
 static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
+static int tokenized = 0;
 static string train;
 static string test;
 static string tokenizer("npylm.model");
@@ -41,6 +42,7 @@ void usage(int argc, char **argv) {
 	cout << "-n, --order=int(default 2)\n";
 	cout << "-e, --epoch=int(default 500)\n";
 	cout << "-t, --threads=int(default 4)\n";
+	cout << "--tokenized=bool(default 0)\n";
 	exit(1);
 }
 
@@ -91,6 +93,7 @@ int read_param(int argc, char **argv) {
 			{"threads", required_argument, 0,0},
 			{"dump", required_argument, 0,0},
 			{"tokenizer", required_argument, 0,0},
+			{"tokenized", no_argument, &tokenized, 1},
 			{0, 0, 0, 0}
 		};
 		int option_index = 0;
@@ -171,15 +174,19 @@ int tokenize(io& f, vector<sentence>& c) {
 int mcmc() {
 	io g(train.c_str());
 	vector<sentence> ws;
-	tokenize(g, ws);
+	if (tokenized) {
+		util::store_sentences(g, ws);
+	} else {
+		tokenize(g, ws);
+	}
 	nio f(ws);
 	/*
-	for (auto i = 0; i < f.head.size()-1; ++i) {
-		for (auto j = f.head[i]; j < f.head[i+1]; ++j) {
-			cout << (*f.raw)[j] << endl;
-		}
-	}
-	*/
+	   for (auto i = 0; i < f.head.size()-1; ++i) {
+	   for (auto j = f.head[i]; j < f.head[i+1]; ++j) {
+	   cout << (*f.raw)[j] << endl;
+	   }
+	   }
+	   */
 	vector<nsentence> corpus(f.head.size()-1);
 
 	npylm lm;
@@ -254,7 +261,11 @@ int mcmc() {
 int parse() {
 	io g(test.c_str());
 	vector<sentence> ws;
-	tokenize(g, ws);
+	if (tokenized) {
+		util::store_sentences(g, ws);
+	} else {
+		tokenize(g, ws);
+	}
 	shared_ptr<cid> d = cid::create();
 	d->load(cdic.c_str());
 	nio f(ws);

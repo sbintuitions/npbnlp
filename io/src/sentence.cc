@@ -24,6 +24,23 @@ sentence::sentence(vector<unsigned int>& d, int head, int tail) {
 sentence::~sentence() {
 }
 
+bool sentence::init_with_pos(vector<unsigned int>& d, int head, int tail) {
+	shared_ptr<wid> dic = wid::create();
+	int i = head;
+	while (i < tail) {
+		word wd(d);
+		//i = util::store_word(wd, d, i);
+		i = util::store_word_with_pos(wd, d, i, tail);
+		if (i == -1) {
+			return false;
+		}
+		wd.id = dic->index(wd);
+		w.push_back(wd);
+	}
+	n.resize(w.size()+1, 0);
+	return true;
+}
+
 int sentence::operator[](int i) {
 	if (i < 0 || i >= (int)w.size())
 		return 0; // bos/eos

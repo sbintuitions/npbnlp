@@ -26,6 +26,8 @@ io::io(const char *file):raw(new vector<unsigned int>) {
 	string buf;
 	while (getline(f, buf)) {
 		swap_cr2ws(buf);
+		if (buf.empty())
+			continue;
 		/*
 		if (!f.eof() && buf[buf.size()-1] != ' ')
 			buf += ' ';
@@ -60,6 +62,8 @@ io::io(istream& in):raw(new vector<unsigned int>) {
 	string buf;
 	while (getline(in, buf)) {
 		swap_cr2ws(buf);
+		if (buf.empty())
+			continue;
 		/*
 		if (!in.eof() && buf[buf.size()-1] != ' ')
 			buf += ' ';
