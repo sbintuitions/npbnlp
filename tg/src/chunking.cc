@@ -14,10 +14,13 @@ using namespace npbnlp;
 using namespace std;
 
 static int n = 2;
+static int m = 3;
+static int l = 20;
 static int threads = 4;
 static int epoch = 500;
 static int dmp = 0;
 static int tokenized = 0;
+static int vocab = 5000;
 static string train;
 static string test;
 static string tokenizer("npylm.model");
@@ -40,8 +43,11 @@ void usage(int argc, char **argv) {
 	cout << *argv << " --parse file --tokenizer npylm.model --model modelfile --cdic dicfile --wdic word.dic\n";
 	cout << "[options]\n";
 	cout << "-n, --order=int(default 2)\n";
+	cout << "-m, --word_order=int(default 3)\n";
+	cout << "-l, --letter_order=int(default 20)\n";
 	cout << "-e, --epoch=int(default 500)\n";
 	cout << "-t, --threads=int(default 4)\n";
+	cout << "-v, --vocab=int(means letter variations. default 5000)\n";
 	cout << "--tokenized=bool(default 0)\n";
 	exit(1);
 }
@@ -60,6 +66,10 @@ int read_long_param(const char *opt, const char *arg) {
 		wdic = arg;
 	} else if (check(opt, "order")) {
 		n = atoi(arg);
+	} else if (check(opt, "word_order")) {
+		m = atoi(arg);
+	} else if (check(opt, "letter_order")) {
+		l = atoi(arg);
 	} else if (check(opt, "epoch")) {
 		epoch = atoi(arg);
 	} else if (check(opt, "threads")) {
@@ -89,6 +99,8 @@ int read_param(int argc, char **argv) {
 			{"cdic", required_argument, 0,0},
 			{"wdic", required_argument, 0,0},
 			{"order", required_argument, 0,0},
+			{"word_order", required_argument, 0, 0},
+			{"letter_order", required_argument, 0, 0},
 			{"epoch", required_argument, 0,0},
 			{"threads", required_argument, 0,0},
 			{"dump", required_argument, 0,0},
@@ -97,7 +109,7 @@ int read_param(int argc, char **argv) {
 			{0, 0, 0, 0}
 		};
 		int option_index = 0;
-		c = getopt_long(argc, argv, "n:e:t:d:", long_options, &option_index);
+		c = getopt_long(argc, argv, "n:m:l:e:t:d:", long_options, &option_index);
 		if (c == -1)
 			break;
 		switch (c) {
@@ -108,6 +120,12 @@ int read_param(int argc, char **argv) {
 				break;
 			case 'n':
 				n = atoi(optarg);
+				break;
+			case 'm':
+				m = atoi(optarg);
+				break;
+			case 'l':
+				l = atoi(optarg);
 				break;
 			case 'e':
 				epoch = atoi(optarg);
@@ -191,7 +209,13 @@ int mcmc() {
 
 	npylm lm;
 	lm.load(tokenizer.c_str());
-	nnpylm chunker(n, lm.n(), lm.m());
+	if (tokenized) {
+	} else {
+		m = lm.n();
+		l = lm.m();
+	}
+	nnpylm chunker(n, m, l);
+	chunker.set(vocab);
 #ifdef _OPENMP
 	omp_set_num_threads(threads);
 #endif
@@ -269,9 +293,11 @@ int parse() {
 	shared_ptr<cid> d = cid::create();
 	d->load(cdic.c_str());
 	nio f(ws);
+	/*
 	npylm lm;
 	lm.load(tokenizer.c_str());
-	nnpylm chunker(n, lm.n(), lm.m());
+	*/
+	nnpylm chunker;//(n, lm.n(), lm.m());
 	chunker.load(model.c_str());
 #ifdef _OPENMP
 	omp_set_num_threads(threads);
