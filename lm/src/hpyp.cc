@@ -570,7 +570,7 @@ void hpyp::remove(word& w, context *h) {
 			_bc->erase(w.id);
 		}
 	}
-	if (_bc->empty())
+	if (_bc && _bc->empty())
 		_bc = nullptr;
 	_cache.clear();
 }
@@ -586,7 +586,7 @@ void hpyp::remove(chunk& c, context *h) {
 		if ((*_cbc)[c.id].empty())
 			_cbc->erase(c.id);
 	}
-	if (_cbc->empty())
+	if (_cbc && _cbc->empty())
 		_cbc = nullptr;
 	_cache.clear();
 }

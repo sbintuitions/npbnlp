@@ -37,6 +37,7 @@ int wid::index(word& w) {
 		} else {
 			_index[w] = _id++;
 		}
+	} else {
 	}
 	return _index[w];
 }

@@ -14,6 +14,7 @@ namespace npbnlp {
 		// delimiter
 		// ':' = 58
 		// ' ' = 32
+		// '\t' = 9
 		static int find(unsigned int delimiter, std::vector<unsigned int>& r, int offset, int end) {
 			if (offset >= (int)r.size())
 				return r.size();

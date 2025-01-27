@@ -378,6 +378,8 @@ void hdp::remove(word& w, context *h) {
 		wrap::remove_a(b, _base);
 		(*_bc)[w.id].erase((*_bc)[w.id].begin()+id);
 	}
+	if (_bc && _bc->empty())
+		_bc = nullptr;
 	_cache.clear();
 }
 
@@ -401,6 +403,8 @@ void hdp::remove(chunk& c, context *h) {
 		wrap::remove_a(b, _base);
 		(*_cbc)[c.id].erase((*_cbc)[c.id].begin()+id);
 	}
+	if (_cbc && _cbc->empty())
+		_cbc = nullptr;
 	_cache.clear();
 }
 

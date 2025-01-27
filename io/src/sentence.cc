@@ -24,6 +24,19 @@ sentence::sentence(vector<unsigned int>& d, int head, int tail) {
 sentence::~sentence() {
 }
 
+void sentence::init_without_indexing(vector<unsigned int>& d, int head, int tail) {
+	shared_ptr<wid> dic = wid::create();
+	int i = head;
+	while (i < tail) {
+		word wd(d);
+		//i = util::store_word(wd, d, i);
+		i = util::store_word(wd, d, i, tail);
+		wd.id = (*dic)[wd];
+		w.push_back(wd);
+	}
+	n.resize(w.size()+1, 0);
+}
+
 bool sentence::init_with_pos(vector<unsigned int>& d, int head, int tail) {
 	shared_ptr<wid> dic = wid::create();
 	int i = head;
@@ -92,4 +105,11 @@ sentence& sentence::operator=(sentence&& s) noexcept {
 
 int sentence::size() {
 	return w.size();
+}
+
+void sentence::cat(sentence& s) {
+	for (auto i = 0; i < s.size(); ++i) {
+		w.push_back(s.w[i]);
+		n.push_back(s.n[i]);
+	}
 }

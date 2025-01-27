@@ -66,12 +66,25 @@ namespace npbnlp {
 	};
 	struct whash {
 		size_t operator() (const word& w) const {
+			size_t seed = w.len;
+			for (int i = 0; i < w.len; ++i) {
+				auto x = w[i];
+				x = ((x >> 16) ^ x) * 0x45d9f3b;
+				x = ((x >> 16) ^ x) * 0x45d9f3b;
+				x = (x >> 16) ^ x;
+				seed ^= x + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+			}
+			return seed;
+		}
+		/*
+		size_t operator() (const word& w) const {
 			size_t id = 19780211;
 			const int size = w.len;
 			for (int i = 0; i < size; ++i)
 				id = id * 37 * w[i];
 			return id;
 		}
+		*/
 	};
 	struct wcmp {
 		bool operator() (const word& a, const word& b) const {

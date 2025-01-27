@@ -16,7 +16,9 @@ namespace npbnlp {
 			// return word.id
 			int operator[](int i);
 			int size();
+			void cat(sentence& s);
 			bool init_with_pos(std::vector<unsigned int>& d, int head, int tail);
+			void init_without_indexing(std::vector<unsigned int>& d, int head, int tail);
 			word& wd(int i);
 			std::vector<word> w;
 			std::vector<int> n;
