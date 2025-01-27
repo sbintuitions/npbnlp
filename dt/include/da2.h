@@ -51,7 +51,8 @@ namespace npbnlp {
 					if (fwrite(&codes, sizeof(int), 1, fp) != 1)
 						throw "failed to write code_size";
 					for (auto& i : _c) {
-						f(i.first, fp);
+						T k = i.first;
+						f(k, fp);
 						/*
 						if (fwrite(&i.first, sizeof(T), 1, fp) != 1)
 							throw "failed to write code";
@@ -384,8 +385,11 @@ namespace npbnlp {
 								break;
 							}
 						}
-						if (!accept)
+						if (!accept) {
+							if (h == _tail)
+								_extend();
 							continue;
+						}
 						break;
 					}
 					return m;
