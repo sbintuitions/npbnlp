@@ -160,7 +160,7 @@ namespace npbnlp {
 						auto p = _check[b]; // parent
 						_base[b] = 0;
 						_check[b] = -1;
-						while (p >= 0) {
+						while (p > 0) {
 							std::vector<long> s;
 							_get_sibling(p, s);
 							if (s.empty()) {
