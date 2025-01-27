@@ -47,6 +47,8 @@ namespace npbnlp {
 					return _id;
 				}
 				void save(FILE *fp, code_serializer f) {
+					if (fwrite(&_id, sizeof(long),1, fp) != 1)
+						throw "failed to write _id";
 					int codes = _c.size();
 					if (fwrite(&codes, sizeof(int), 1, fp) != 1)
 						throw "failed to write code_size";
@@ -62,6 +64,8 @@ namespace npbnlp {
 					}
 				}
 				void load(FILE *fp, code_deserializer f) {
+					if (fread(&_id, sizeof(long), 1, fp) != 1)
+						throw "failed to load _id";
 					int codes = 0;
 					if (fread(&codes, sizeof(int),1, fp) != 1)
 						throw "failed to load code_size";

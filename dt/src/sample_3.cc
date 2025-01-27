@@ -73,6 +73,34 @@ int main(int argc, char **argv) {
 	da<unsigned int, vector<vector<unsigned int> > > trie;
 	trie.build(keys, values);
 	trie.save("sample3.idx", vv_writer, uint_writer);
+	cout << "finished build\n" << endl;
+	// check and common prefix search
+	da<unsigned int, vector<vector<unsigned int> > > check;
+	check.load("sample3.idx", vv_reader, uint_reader);
+	cout << "input query" << endl;
+	string buf;
+	while (getline(cin, buf)) {
+		io::chomp(buf);
+		vector<unsigned int> query;
+		io::s2i(buf.c_str(), query);
+		query.push_back(0);
+		auto r = check.cp_search(query);
+		for (auto& i : r) {
+			cout << "len:" << i.first << endl;
+			auto v = check.getval(i.second);
+			if (v) {
+				for (auto& j : v.value()) {
+					for (auto& c : j) {
+						char buf[5] = {0};
+						io::i2c(c, buf);
+						cout << buf;
+					}
+					cout << " ";
+				}
+				cout << endl;
+			}
+		}
+	}
 	return 0;
 }
 
