@@ -367,8 +367,11 @@ namespace npbnlp {
 								break;
 							}
 						}
-						if (!accept)
+						if (!accept) {
+							if (h == _tail)
+								_extend();
 							continue;
+						}
 						break;
 					}
 					return m;
