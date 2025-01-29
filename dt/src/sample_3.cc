@@ -3,6 +3,7 @@
 #include<iostream>
 #include<bits/stdc++.h>
 #include"util.h"
+//#include"da.h"
 #include"da2.h"
 
 using namespace std;
@@ -47,6 +48,7 @@ int main(int argc, char **argv) {
 	vector<vector<unsigned int> > keys;
 	vector<vector<vector<unsigned int> > > values;
 
+	da<unsigned int, vector<vector<unsigned int> > > trie(0);
 	int id = 0;
 	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
 		int p = util::find(d, *f.raw, f.head[i], f.head[i+1]);
@@ -68,14 +70,15 @@ int main(int argc, char **argv) {
 			values[id].emplace_back(v);
 			p = next;
 		}
+		trie.insert(keys[id], values[id]);
 		++id;
 	}
-	da<unsigned int, vector<vector<unsigned int> > > trie;
-	trie.build(keys, values);
+	//trie.build(keys, values);
 	trie.save("sample3.idx", vv_writer, uint_writer);
+	/*
 	cout << "finished build\n" << endl;
 	// check and common prefix search
-	da<unsigned int, vector<vector<unsigned int> > > check;
+	da<unsigned int, vector<vector<unsigned int> > > check(0);
 	check.load("sample3.idx", vv_reader, uint_reader);
 	cout << "input query" << endl;
 	string buf;
@@ -101,41 +104,6 @@ int main(int argc, char **argv) {
 			}
 		}
 	}
+	*/
 	return 0;
 }
-
-/*
-int main(int argc, char **argv) {
-	vector<int> order(10);
-	iota(order.rbegin(), order.rend(), -order.size()+2);
-	vector<int> redro(10);
-	iota(redro.rbegin(), redro.rend(), -redro.size());
-	order[0] = 0; order[1] = -10;
-	redro[0] = 0;
-
-	for (auto& i: order) {
-		cout << i << " ";
-	}
-	cout << endl;
-	for (auto& i: redro) {
-		cout << i << " ";
-	}
-	cout << endl;
-
-	auto offset = order.size();
-	order.resize(order.size()*2);
-	iota(order.rbegin(),order.rend()-offset,-order.size()+2);
-	for (auto& i: order) {
-		cout << i << " ";
-	}
-	cout << endl;
-	offset = redro.size();
-	redro.resize(redro.size()*2);
-	iota(redro.rbegin(),redro.rend()-offset,-redro.size());
-	for (auto& i: redro) {
-		cout << i << " ";
-	}
-	cout << endl;
-	return 0;
-}
-*/

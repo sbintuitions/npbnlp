@@ -13,7 +13,7 @@ namespace npbnlp {
 	template<class T>
 		class node {
 			public:
-				node():id(T()),parent(NULL) {
+				node():parent(NULL) {
 				}
 				node(T i):id(i) {
 				}
@@ -28,8 +28,7 @@ namespace npbnlp {
 			public:
 				using code_serializer = void(*)(T&, FILE*);
 				using code_deserializer = void(*)(T&, FILE*);
-				code():_id(1) {
-					_c[T()] = _id++;
+				code():_id(2) {
 				}
 				virtual ~code() {
 				}
@@ -45,6 +44,10 @@ namespace npbnlp {
 				}
 				long id() {
 					return _id;
+				}
+				void set_terminal(T k) {
+					if (_c.find(k) == _c.end() || _c[k] != 1)
+						_c[k] = 1;
 				}
 				void save(FILE *fp, code_serializer f) {
 					if (fwrite(&_id, sizeof(long),1, fp) != 1)
@@ -102,6 +105,7 @@ namespace npbnlp {
 				long id() {
 					return 257;
 				}
+				void set_terminal(char k){}
 				void save(FILE *fp, code_serializer f) {
 				}
 				
@@ -116,7 +120,7 @@ namespace npbnlp {
 				using code_serializer = void(*)(T&, FILE*);
 				using code_deserializer = void(*)(T&, FILE*);
 				using rst = std::vector<std::pair<int, long> >;
-				da():_nid(1) {
+				da(T terminal):_nid(1) {
 					_base.resize(8192);
 					_check.resize(8192);
 					// init doubly linked list
@@ -126,6 +130,8 @@ namespace npbnlp {
 					_check[0] = 0;
 					_head = 1;
 					_tail = _check.size()-1;
+					_listsize = _base.size()-1;
+					_c.set_terminal(terminal);
 				}
 				virtual ~da() {
 				}
@@ -204,7 +210,7 @@ namespace npbnlp {
 					long b = 0;
 					int len = 0;
 					for (auto& i : query) {
-						long c = _base[b] + _c[0];
+						long c = _base[b] + 1;
 						if (_check[c] == b && _base[c] < 0)
 							r.emplace_back(std::make_pair(len, -_base[c]));
 						b = _traverse(b, i);
@@ -236,6 +242,8 @@ namespace npbnlp {
 					if (fwrite(&_head, sizeof(long), 1, fp) != 1)
 						return 1;
 					if (fwrite(&_tail, sizeof(long), 1, fp) != 1)
+						return 1;
+					if (fwrite(&_listsize, sizeof(long), 1, fp) != 1)
 						return 1;
 					long bsize = _base.size();
 					if (fwrite(&bsize, sizeof(long), 1, fp) != 1)
@@ -273,6 +281,8 @@ namespace npbnlp {
 					if (fread(&_head, sizeof(long), 1, fp) != 1)
 						return 1;
 					if (fread(&_tail, sizeof(long), 1, fp) != 1)
+						return 1;
+					if (fread(&_listsize, sizeof(long), 1, fp) != 1)
 						return 1;
 					long bsize = 0;
 					if (fread(&bsize, sizeof(long), 1, fp) != 1)
@@ -315,6 +325,7 @@ namespace npbnlp {
 				std::vector<long> _erased;
 				long _head;
 				long _tail;
+				long _listsize;
 
 				long _traverse(long b, T c) {
 					if (b >= (long)_base.size())
@@ -412,6 +423,7 @@ namespace npbnlp {
 				}
 
 				void _link(long b) {
+					++_listsize;
 					auto prev = -_base[_tail];
 					auto next = -_check[_tail];
 					_base[b] = -_tail;
@@ -421,6 +433,10 @@ namespace npbnlp {
 				}
 
 				void _delink(long b) {
+					--_listsize;
+					if ((double)_listsize/_base.size() < 0.1) {
+						_extend();
+					}
 					auto prev = -_base[b];
 					auto next = -_check[b];
 					if (next < _base.size())
@@ -460,9 +476,18 @@ namespace npbnlp {
 					_check.resize(2*_check.size());
 					std::iota(_base.rbegin(), _base.rend()-offset,-_base.size()+2);
 					std::iota(_check.rbegin(), _check.rend()-offset,-_check.size());
+					/*
 					_base[offset] = -_tail;
 					_tail = _check.size()-1;
 					_base[_head] = -_base.size();
+					*/
+					auto h = _head;
+					auto t = _tail;
+					_base[h] = -_check.size()+1;
+					_check[t] = -_base.size();
+					_check[_check.size()-1] = -h;
+					_head = offset;
+					_listsize += offset;
 				}
 
 				bool _is_empty(long i) {

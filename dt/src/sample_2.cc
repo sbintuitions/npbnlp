@@ -24,7 +24,7 @@ void reader(int& i, FILE *fp) {
 }
 
 int main(int argc, char **argv) {
-	da<char, int> trie;
+	da<char, int> trie('\0');
 	vector<vector<char> > keys;
 
 	ifstream f(*(argv+1));
@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 	trie.save("sample2.idx", writer, char_writer);
 
 	/*
-	da<char, int> check;
+	da<char, int> check('\0');
 	check.load("sample2.idx", reader, char_reader);
 	int j = 0;
 	for (auto& k : keys) {

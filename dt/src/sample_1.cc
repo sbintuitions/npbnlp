@@ -24,7 +24,7 @@ void reader(int& i, FILE *fp) {
 }
 
 int main(int argc, char **argv) {
-	da<char, int> trie;
+	da<char, int> trie('\0');
 	vector<vector<char> > keys;
 	vector<int> vals;
 
@@ -44,8 +44,7 @@ int main(int argc, char **argv) {
 	trie.build(keys, vals);
 	trie.save("trie.idx", writer, char_writer);
 
-	/*
-	da<char, int> check;
+	da<char, int> check('\0');
 	check.load("trie.idx", reader, char_reader);
 	for (auto& k : keys) {
 		long id = check.exactmatch(k);
@@ -60,6 +59,5 @@ int main(int argc, char **argv) {
 			cout << " is not found" << endl;
 		}
 	}
-	*/
 	return 0;
 }
