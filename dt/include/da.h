@@ -14,7 +14,7 @@ namespace npbnlp {
 			public:
 				node():parent(NULL) {
 				}
-				node(T i):id(i) {
+				node(T i):id(i),parent(NULL) {
 				}
 				virtual ~node() {
 				}
@@ -152,7 +152,7 @@ namespace npbnlp {
 						b = _modify(b, k);
 					}
 					long n = exactmatch(key);
-					if (_value.size() <= _nid) {
+					if (_value.size() < _nid) {
 						_value.resize(_nid);
 					}
 					_value[n] = value;
@@ -334,8 +334,10 @@ namespace npbnlp {
 						_base.resize(2*_base.size(), 0);
 						_check.resize(2*_check.size(), -1);
 					}
+					/*
 					if (_check[k] >= 0 && _check[k] != b)
 						return 0;
+						*/
 					return k;
 				}
 
@@ -498,7 +500,7 @@ namespace npbnlp {
 					_update_offset();
 					for (auto& s : subtree.sibling) {
 						long n = _base[b] + _c[s.id];
-						if (_base[n] >= 0)
+						if (_base[n] >= 0 && _check[n] == b)
 							_add_subtree(s, n);
 					}
 					return 1;

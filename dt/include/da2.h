@@ -15,7 +15,7 @@ namespace npbnlp {
 			public:
 				node():parent(NULL) {
 				}
-				node(T i):id(i) {
+				node(T i):id(i),parent(NULL) {
 				}
 				virtual ~node() {
 				}
@@ -160,7 +160,7 @@ namespace npbnlp {
 						b = _modify(b, k);
 					}
 					long n = exactmatch(key);
-					if (_value.size() <= _nid) {
+					if (_value.size() < _nid) {
 						_value.resize(_nid);
 					}
 					_value[n] = value;
@@ -344,8 +344,10 @@ namespace npbnlp {
 					long k = c + m;
 					if (!_is_empty(k))
 						return 0;
+					/*
 					if (_check[k] >= 0 && _check[k] != b)
 						return 0;
+						*/
 					return k;
 				}
 
@@ -413,6 +415,33 @@ namespace npbnlp {
 					return m;
 				}
 
+				bool check_list() {
+					// forward check
+					auto prev = 0;
+					for (auto h = _head; h != _tail; h = -_check[h]) {
+						if (_check[h] >= 0) {
+							std::cout << "in forward check, found not empty node " << h << " base[" << h << "]:" << _base[h] << " check[" << h << "]:" << _check[h] << " head:" << _head << " tail:" << _tail << " size:" << _base.size() << std::endl;
+							std::cout << "prev node:" << prev << " base[" << prev << "]:" << _base[prev] << " check[" << prev << "]:" << _check[prev] << std::endl;
+							return false;
+						} else {
+							if (prev == h) {
+								std::cout << "in forward, found loop. current:" << h << " prev:" << prev << " next:" << -_check[h] << std::endl;
+							}
+						}
+						prev = h;
+					}
+					prev = 0;
+					for (auto t = _tail; t != _head; t = -_base[t]) {
+						if (_base[t] >= 0) {
+							std::cout << "in backward check, found not empty node " << t << " base[" << t << "]:" << _base[t] << " check[" << t << "]:" << _check[t] << " head:" << _head << " tail:" << _tail << " size:" << _base.size() << std::endl;
+							std::cout << "prev node:" << prev << " base[" << prev << "]:" << _base[prev] << " check[" << prev << "]:" << _check[prev] << std::endl;
+							return false;
+						}
+						prev = t;
+					}
+					return true;
+				}
+
 				long _next_nid() {
 					if (!_erased.empty()) {
 						long n = _erased[_erased.size()-1];
@@ -439,19 +468,17 @@ namespace npbnlp {
 					}
 					auto prev = -_base[b];
 					auto next = -_check[b];
-					if (next < _base.size())
-						_base[next] = _base[b];
-					if (prev < _check.size())
-						_check[prev] = _check[b];
+					_base[next] = _base[b];
+					_check[prev] = _check[b];
 					if (b == _head) {
 						_head = next;
-						_base[_head] = -prev;
+						//_base[_head] = -prev;
 					} else if (b == _tail) {
 						_tail = prev;
-						_check[_tail] = -next;
+						//_check[_tail] = -next;
 					}
 					_base[b] = 0;
-					_check[b] = -1;
+					_check[b] = 0;
 				}
 
 				int _add(long b, T k) {
@@ -471,22 +498,25 @@ namespace npbnlp {
 				}
 
 				void _extend() {
+					auto old_head = _head;
+					auto old_tail = _tail;
 					auto offset = _base.size();
 					_base.resize(2*_base.size());
 					_check.resize(2*_check.size());
 					std::iota(_base.rbegin(), _base.rend()-offset,-_base.size()+2);
 					std::iota(_check.rbegin(), _check.rend()-offset,-_check.size());
 					/*
-					_base[offset] = -_tail;
-					_tail = _check.size()-1;
-					_base[_head] = -_base.size();
-					*/
+					   _base[offset] = -_tail;
+					   _tail = _check.size()-1;
+					   _base[_head] = -_base.size();
+					   */
 					auto h = _head;
 					auto t = _tail;
 					_base[h] = -_check.size()+1;
 					_check[t] = -_base.size();
 					_check[_check.size()-1] = -h;
 					_head = offset;
+					_base[_head] = -_base.size();
 					_listsize += offset;
 				}
 
@@ -495,7 +525,7 @@ namespace npbnlp {
 						_extend();
 					}
 
-					return (_check[i] < 0);
+					return (_base[i] < 0 && _check[i] < 0);
 				}
 
 				void _modify_check(long f, long t) {
@@ -531,13 +561,11 @@ namespace npbnlp {
 						_link(t); // add node t to list
 					}
 					_add(b, k);
-					//_update_offset();
 					return _base[b] + _c[k];
 				}
 
 
 				int _add_subtree(node<T>& subtree, long b) {
-					//_delink(b);
 					long m = _xcheck(subtree, b);
 					_base[b] = m;
 					for (auto& s : subtree.sibling) {
@@ -547,10 +575,9 @@ namespace npbnlp {
 						if (s.id == 0 && s.sibling.empty())
 							_base[n] = -_next_nid();
 					}
-					//_update_offset();
 					for (auto& s : subtree.sibling) {
 						long n = _base[b] + _c[s.id];
-						if (_base[n] >= 0)
+						if (_base[n] >= 0 && _check[n] == b)
 							_add_subtree(s, n);
 					}
 					return 1;
