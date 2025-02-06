@@ -3,10 +3,12 @@
 
 #include"dalm.h"
 #include"da2.h"
+#include"sda.h"
 #include<memory>
 
 namespace npbnlp {
-	class count : public da<unsigned int, int> {
+	//class count : public da<unsigned int, int> {
+	class count : public sda<int> {
 		public:
 			static void uint_writer(unsigned int& c, FILE *fp) {
 				fwrite(&c, sizeof(unsigned int), 1, fp);
@@ -20,17 +22,19 @@ namespace npbnlp {
 			static void int_reader(int& c, FILE *fp) {
 				fread(&c, sizeof(int), 1, fp);
 			}
-			count(unsigned int terminal):da<unsigned int,int>(terminal) {
+			//count(unsigned int terminal):da<unsigned int,int>(terminal) {
+			count(unsigned int terminal):sda<int>(terminal) {
 			}
 			virtual ~count() {
 			}
+			/*
 			da::rst cs_search(sentence& s, int i, int n) {
 				rst r;
 				long b = 0;
 				int len = 0;
 				for (auto j = i; j > i-n; --j) {
 					long c = _base[b] + 1;
-					if (_check[c] == b && _base[c] < c)
+					if (_check[c] == b && _base[c] < 0)
 						r.emplace_back(std::make_pair(len, -_base[c]));
 					b = _traverse(b, s[j]);
 					++len;
@@ -45,7 +49,7 @@ namespace npbnlp {
 				int len = 0;
 				for (auto j = i; j > i-n; --j) {
 					long c = _base[b] + 1;
-					if (_check[c] == b && _base[c] < c)
+					if (_check[c] == b && _base[c] < 0)
 						r.emplace_back(std::make_pair(len, -_base[c]));
 					b = _traverse(b, w[j]);
 					++len;
@@ -83,6 +87,7 @@ namespace npbnlp {
 					return std::nullopt;
 				return _value[id];
 			}
+			*/
 			void insert(sentence& s, int i, int n) {
 				node<unsigned int> tree;
 				make_subtree(tree, s, i, n);
@@ -108,8 +113,11 @@ namespace npbnlp {
 				_value[id]++;
 			}
 			void incr(word& w, int i, int n) {
-				insert(w, i, n);
 				long id = rexactmatch(w, i, n);
+				if (id < 0) {
+					insert(w, i, n);
+					id = rexactmatch(w, i, n);
+				}
 				_value[id]++;
 			}
 			void decr(sentence& s, int i, int n) {
@@ -176,6 +184,7 @@ namespace npbnlp {
 					}
 				}
 			}
+			/*
 			void insert_subtree(node<unsigned int>& t, long b) {
 				for (auto& s : t.sibling) {
 					if (_add(b, s.id))
@@ -194,7 +203,7 @@ namespace npbnlp {
 					node<unsigned int> n(s[j]); n.parent = p;
 					p->sibling.emplace_back(n);
 					auto next = p->sibling.size()-1;
-					node<unsigned int> m(3/*3:terminal*/); m.parent = &p->sibling[next];
+					node<unsigned int> m(3); m.parent = &p->sibling[next];
 					p->sibling[next].sibling.emplace_back(m);
 					p = & p->sibling[next];
 				}
@@ -207,11 +216,12 @@ namespace npbnlp {
 					node<unsigned int> n(w[j]); n.parent = p;
 					p->sibling.emplace_back(n);
 					auto next = p->sibling.size()-1;
-					node<unsigned int> m(3/*3:terminal*/); m.parent = &p->sibling[next];
+					node<unsigned int> m(3); m.parent = &p->sibling[next];
 					p->sibling[next].sibling.emplace_back(m);
 					p = & p->sibling[next];
 				}
 			}
+			*/
 	};
 	class kn {
 		public:
