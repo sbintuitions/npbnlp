@@ -12,15 +12,11 @@ namespace npbnlp {
 			virtual double lp(word& w, int i) = 0;
 			virtual double lp(sentence& s, int i) = 0;
 			virtual bool add(word& w) = 0;
-			virtual bool add(word& w, int i) = 0;
 			virtual bool add(sentence& s) = 0;
-			virtual bool add(sentence& s, int i) = 0;
 			virtual bool remove(word& w) = 0;
-			virtual bool remove(word& w, int i) = 0;
 			virtual bool remove(sentence& s) = 0;
-			virtual bool remove(sentence& s, int i) = 0;
-			virtual void save(const char *file) = 0;
-			virtual void load(const char *file) = 0;
+			virtual int save(const char *file) = 0;
+			virtual int load(const char *file) = 0;
 	};
 }
 
