@@ -36,7 +36,7 @@ void kn::set_discount(double d) {
 		_d = d;
 }
 
-bool kn::add(word& w, int i, int n) {
+bool kn::_add(word& w, int i, int n) {
 	if (n == 0)
 		return true;
 	_nc->incr(w, i, n);
@@ -45,19 +45,19 @@ bool kn::add(word& w, int i, int n) {
 	auto v = _nc->getval(id);
 	if (v && v.value() == 1) {
 		_nk->incr(w, i-1, n-1);
-		return add(w, i, n-1);
+		return _add(w, i, n-1);
 	}
 	return true;
 }
 
 bool kn::add(word& w) {
 	for (auto i = 0; i <= w.len; ++i) {
-		add(w, i, _n);
+		_add(w, i, _n);
 	}
 	return true;
 }
 
-bool kn::remove(word& w, int i, int n) {
+bool kn::_remove(word& w, int i, int n) {
 	if (n == 0)
 		return true;
 	_nc->decr(w, i, n);
@@ -66,19 +66,19 @@ bool kn::remove(word& w, int i, int n) {
 	auto v = _nc->getval(id);
 	if (!v) {
 		_nk->decr(w, i-1, n-1);
-		return remove(w, i, n-1);
+		return _remove(w, i, n-1);
 	}
 	return true;
 }
 
 bool kn::remove(word& w) {
 	for (auto i = 0; i <= w.len; ++i) {
-		remove(w, i, _n);
+		_remove(w, i, _n);
 	}
 	return true;
 }
 
-bool kn::add(sentence& s, int i, int n) {
+bool kn::_add(sentence& s, int i, int n) {
 	if (n == 0)
 		return true;
 	_nc->incr(s, i, n);
@@ -87,19 +87,19 @@ bool kn::add(sentence& s, int i, int n) {
 	auto v = _nc->getval(id);
 	if (v && v.value() == 1) {
 		_nk->incr(s, i-1, n-1);
-		return add(s, i, n-1);
+		return _add(s, i, n-1);
 	}
 	return true;
 }
 
 bool kn::add(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
-		add(s, i, _n);
+		_add(s, i, _n);
 	}
 	return true;
 }
 
-bool kn::remove(sentence& s, int i, int n) {
+bool kn::_remove(sentence& s, int i, int n) {
 	if (n == 0)
 		return true;
 	_nc->decr(s, i, n);
@@ -108,14 +108,14 @@ bool kn::remove(sentence& s, int i, int n) {
 	auto v = _nc->getval(id);
 	if (!v) {
 		_nk->decr(s, i-1, n-1);
-		return remove(s, i, n-1);
+		return _remove(s, i, n-1);
 	}
 	return true;
 }
 
 bool kn::remove(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
-		remove(s, i, _n);
+		_remove(s, i, _n);
 	}
 	return true;
 }

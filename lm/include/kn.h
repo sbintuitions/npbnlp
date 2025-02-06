@@ -121,7 +121,7 @@ namespace npbnlp {
 				}
 			}
 	};
-	class kn {
+	class kn : public dalm {
 		public:
 			kn();
 			kn(int n);
@@ -133,13 +133,9 @@ namespace npbnlp {
 			double lp(word& w);
 			double lp(sentence& s);
 			bool add(word& w);
-			bool add(word& w, int i, int n);
 			bool remove(word& w);
-			bool remove(word& w, int i, int n);
 			bool add(sentence& s);
-			bool add(sentence& s, int i, int n);
 			bool remove(sentence& s);
-			bool remove(sentence& s, int i, int n);
 			void set_discount(double d);
 			int save(const char *file);
 			int load(const char *file);
@@ -149,6 +145,10 @@ namespace npbnlp {
 			std::shared_ptr<count> _nc;
 			std::shared_ptr<count> _nz;
 			std::shared_ptr<count> _nk;
+			bool _add(word& w, int i, int n);
+			bool _remove(word& w, int i, int n);
+			bool _add(sentence& s, int i, int n);
+			bool _remove(sentence& s, int i, int n);
 	};
 }
 
