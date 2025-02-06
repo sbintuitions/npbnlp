@@ -12,7 +12,7 @@ shared_ptr<vector<word> > cid::_word;
 shared_ptr<cid> cid::create() {
 	lock_guard<mutex> lock(_mutex);
 	if (_idx == nullptr) {
-		_idx = shared_ptr<cid>(new cid(2));
+		_idx = shared_ptr<cid>(new cid(4/*2*/));
 		_word = make_shared<vector<word> >();
 		_letter = make_shared<vector<unsigned int> >();
 	}
