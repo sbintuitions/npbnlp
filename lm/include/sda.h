@@ -71,13 +71,11 @@ namespace npbnlp {
 						return std::nullopt;
 					return da<unsigned int,V>::_value[id];
 				}
-				/*
-				V& getval(long id) {
-					if (id >= (long)_value.size() || id < 0 || std::find(_erased.begin(), _erased.end(), id) != _erased.end())
+				V& val(long id) {
+					if (id >= (long)da<unsigned int,V>::_value.size() || id < 0 || std::find(da<unsigned int,V>::_erased.begin(), da<unsigned int,V>::_erased.end(), id) != da<unsigned int,V>::_erased.end())
 						throw "found invalid id";
-					return _value[id];
+					return da<unsigned int,V>::_value[id];
 				}
-				*/
 				void insert(sentence& s, int i, int n) {
 					node<unsigned int> tree;
 					make_subtree(tree, s, i, n);
