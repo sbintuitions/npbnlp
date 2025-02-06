@@ -16,7 +16,7 @@ shared_ptr<vector<unsigned int> > wid::_letter;
 shared_ptr<wid> wid::create() {
 	lock_guard<mutex> lock(_mutex);
 	if (_idx == nullptr) {
-		_idx = shared_ptr<wid>(new wid(2));
+		_idx = shared_ptr<wid>(new wid(4/*2*/));
 		_letter = make_shared<vector<unsigned int> >(); 
 	}
 	return _idx;
