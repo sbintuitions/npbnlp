@@ -8,7 +8,7 @@ namespace npbnlp {
 		class sda : public da<unsigned int, V> {
 			public:
 				using rst = typename da<unsigned int, V>::rst;
-				sda(unsigned int terminal):da<unsigned int, V>(terminal) {
+				sda(unsigned int terminal):da<unsigned int, V>(terminal),_terminal(terminal) {
 				}
 				virtual ~sda() {
 				}
@@ -49,7 +49,7 @@ namespace npbnlp {
 						if (b < 0)
 							return -1;
 					}
-					b = da<unsigned int,V>::_traverse(b, 3); // terminal code
+					b = da<unsigned int,V>::_traverse(b, _terminal); // terminal code
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0)
 						return -da<unsigned int,V>::_base[b];
 					return -1;
@@ -61,7 +61,7 @@ namespace npbnlp {
 						if (b < 0)
 							return -1;
 					}
-					b = da<unsigned int,V>::_traverse(b, 3);
+					b = da<unsigned int,V>::_traverse(b, _terminal);
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0)
 						return -da<unsigned int,V>::_base[b];
 					return -1;
@@ -99,7 +99,7 @@ namespace npbnlp {
 						if (b < 0)
 							return;
 					}
-					b = da<unsigned int,V>::_traverse(b, 3);
+					b = da<unsigned int,V>::_traverse(b, _terminal);
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0 && da<unsigned int,V>::_check[b] >= 0) {
 						da<unsigned int,V>::_erased.emplace_back(-da<unsigned int,V>::_base[b]);
 						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(n);
@@ -125,7 +125,7 @@ namespace npbnlp {
 						if (b < 0)
 							return;
 					}
-					b = da<unsigned int,V>::_traverse(b, 3);
+					b = da<unsigned int,V>::_traverse(b, _terminal);
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0 && da<unsigned int,V>::_check[b] >= 0) {
 						da<unsigned int,V>::_erased_emplace_back(-da<unsigned int,V>::_base[b]);
 						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(n);
@@ -156,30 +156,32 @@ namespace npbnlp {
 				}
 				void make_subtree(node<unsigned int>& t, sentence& s, int i, int n) {
 					node<unsigned int> *p = &t;
-					node<unsigned int> terminal(3); terminal.parent = p;
+					node<unsigned int> terminal(_terminal); terminal.parent = p;
 					p->sibling.emplace_back(terminal);
 					for (auto j = i; j > i-n; --j) {
 						node<unsigned int> n(s[j]); n.parent = p;
 						p->sibling.emplace_back(n);
 						auto next = p->sibling.size()-1;
-						node<unsigned int> m(3); m.parent= &p->sibling[next];
+						node<unsigned int> m(_terminal); m.parent= &p->sibling[next];
 						p->sibling[next].sibling.emplace_back(m);
 						p = &p->sibling[next];
 					}
 				}
 				void make_subtree(node<unsigned int>& t, word& w, int i, int n) {
 					node<unsigned int> *p = &t;
-					node<unsigned int> terminal(3); terminal.parent = p;
+					node<unsigned int> terminal(_terminal); terminal.parent = p;
 					p->sibling.emplace_back(terminal);
 					for (auto j = i; j > i-n; --j) {
 						node<unsigned int> n(w[j]); n.parent = p;
 						p->sibling.emplace_back(n);
 						auto next = p->sibling.size()-1;
-						node<unsigned int> m(3); m.parent= &p->sibling[next];
+						node<unsigned int> m(_terminal); m.parent= &p->sibling[next];
 						p->sibling[next].sibling.emplace_back(m);
 						p = &p->sibling[next];
 					}
 				}
+			protected:
+				unsigned int _terminal;
 		};
 }
 
