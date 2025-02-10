@@ -12,6 +12,15 @@ namespace npbnlp {
 				}
 				virtual ~sda() {
 				}
+				typename std::vector<V>::iterator begin() {
+					return da<unsigned int,V>::_value.begin();
+				}
+				typename std::vector<V>::iterator end() {
+					return da<unsigned int,V>::_value.end();
+				}
+				bool is_erased(long id) {
+					return (std::find(da<unsigned int, V>::_erased.begin(), da<unsigned int,V>::_erased.end(), id) != da<unsigned int,V>::_erased.end());
+				}
 				rst cs_search(sentence& s, int i, int n) {
 					rst r;
 					long b = 0;
@@ -23,8 +32,11 @@ namespace npbnlp {
 						b = da<unsigned int,V>::_traverse(b, s[j]);
 						++len;
 						if (b < 0)
-							break;
+							return r;
 					}
+					long c = da<unsigned int,V>::_base[b] + 1;
+					if (da<unsigned int,V>::_check[c] == b && da<unsigned int,V>::_base[c] < 0)
+						r.emplace_back(std::make_pair(len,-da<unsigned int,V>::_base[c]));
 					return r;
 				}
 				rst cs_search(word& w, int i, int n) {
@@ -38,8 +50,11 @@ namespace npbnlp {
 						b = da<unsigned int,V>::_traverse(b, w[j]);
 						++len;
 						if (b < 0)
-							break;
+							return r;
 					}
+					long c = da<unsigned int,V>::_base[b] + 1;
+					if (da<unsigned int,V>::_check[c] == b && da<unsigned int,V>::_base[c] < 0)
+						r.emplace_back(std::make_pair(len,-da<unsigned int,V>::_base[c]));
 					return r;
 				}
 				long rexactmatch(sentence& s, int i, int n) {
@@ -80,16 +95,20 @@ namespace npbnlp {
 					node<unsigned int> tree;
 					make_subtree(tree, s, i, n);
 					insert_subtree(tree, 0);
-					if (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
-						da<unsigned int,V>::_value.resize(da<unsigned int,V>::_nid, V(n));
+					//if (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
+					while (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
+						//da<unsigned int,V>::_value.resize(da<unsigned int,V>::_nid, V(n));
+						da<unsigned int,V>::_value.emplace_back(V(n));
 					}
 				}
 				void insert(word& w, int i, int n) {
 					node<unsigned int> tree;
 					make_subtree(tree, w, i, n);
 					insert_subtree(tree, 0);
-					if (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
-						da<unsigned int,V>::_value.resize(da<unsigned int,V>::_nid, V(n));
+					//if (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
+					while (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
+						//da<unsigned int,V>::_value.resize(da<unsigned int,V>::_nid, V(n));
+						da<unsigned int,V>::_value.emplace_back(V(n));
 					}
 				}
 				void erase(sentence& s, int i, int n) {
@@ -102,7 +121,7 @@ namespace npbnlp {
 					b = da<unsigned int,V>::_traverse(b, _terminal);
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0 && da<unsigned int,V>::_check[b] >= 0) {
 						da<unsigned int,V>::_erased.emplace_back(-da<unsigned int,V>::_base[b]);
-						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(n);
+						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(-1);
 						auto p = da<unsigned int,V>::_check[b];
 						da<unsigned int,V>::_link(b);
 						while (p > 0) {
@@ -127,8 +146,8 @@ namespace npbnlp {
 					}
 					b = da<unsigned int,V>::_traverse(b, _terminal);
 					if (b >= 0 && da<unsigned int,V>::_base[b] < 0 && da<unsigned int,V>::_check[b] >= 0) {
-						da<unsigned int,V>::_erased_emplace_back(-da<unsigned int,V>::_base[b]);
-						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(n);
+						da<unsigned int,V>::_erased.emplace_back(-da<unsigned int,V>::_base[b]);
+						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(-1);
 						auto p = da<unsigned int,V>::_check[b];
 						da<unsigned int,V>::_link(b);
 						while (p > 0) {

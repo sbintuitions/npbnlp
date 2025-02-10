@@ -125,6 +125,16 @@ double kn::lp(word& w, int i) {
 	auto nz = _nz->cs_search(w, i-1, _n-1);
 	auto nk = _nk->cs_search(w, i-1, _n-1);
 	double lp = -log(_nk->getval(nk[0].second).value());
+	for (auto j = 1; j < nz.size()+1; ++j) {
+		auto z = _nz->getval(nz[j-1].second);
+		auto k = _nk->getval(nk[j-1].second);
+		lp += log(_d)+log(k.value())-log(z.value());
+		if (nc.size() > j) {
+			auto c = _nc->getval(nc[j].second);
+			lp = math::lse(lp, (log((double)c.value()-_d))-log(z.value()));
+		}
+	}
+	/*
 	for (auto j = 1; j < nc.size(); ++j) {
 		auto c = _nc->getval(nc[j].second);
 		auto z = _nz->getval(nz[j-1].second);
@@ -133,6 +143,7 @@ double kn::lp(word& w, int i) {
 		lp = math::lse(lp, (log((double)c.value()-_d))-log(z.value()));
 
 	}
+	*/
 	return lp;
 }
 
@@ -141,6 +152,16 @@ double kn::lp(sentence& s, int i) {
 	auto nz = _nz->cs_search(s, i-1, _n-1);
 	auto nk = _nk->cs_search(s, i-1, _n-1);
 	double lp = -log(_nk->getval(nk[0].second).value());
+	for (auto j = 1; j < nz.size()+1; ++j) {
+		auto z = _nz->getval(nz[j-1].second);
+		auto k = _nk->getval(nk[j-1].second);
+		lp += log(_d)+log(k.value())-log(z.value());
+		if (nc.size() > j) {
+			auto c = _nc->getval(nc[j].second);
+			lp = math::lse(lp, (log((double)c.value()-_d))-log(z.value()));
+		}
+	}
+	/*
 	for (auto j = 1; j < nc.size(); ++j) {
 		auto c = _nc->getval(nc[j].second);
 		auto z = _nz->getval(nz[j-1].second);
@@ -149,6 +170,7 @@ double kn::lp(sentence& s, int i) {
 		lp = math::lse(lp, (log((double)c.value()-_d))-log(z.value()));
 
 	}
+	*/
 	return lp;
 }
 

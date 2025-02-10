@@ -198,7 +198,8 @@ namespace npbnlp {
 				V& operator[](std::vector<T>& key) {
 					long id = exactmatch(key);
 					if (id < 0) { // not found
-						insert(key, V());
+						V v;
+						insert(key, v);
 						id = exactmatch(key);
 						return _value[id];
 					} else {
