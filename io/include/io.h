@@ -65,6 +65,7 @@ namespace npbnlp {
 				int len = str.size();
 				while (str[len-1] == '\n' || str[len-1] == '\r') {
 					str[len-1] = '\0';
+					str.pop_back();
 					--len;
 				}
 			}

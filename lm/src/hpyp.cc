@@ -15,8 +15,8 @@ using namespace npbnlp;
 using gamma_dist = gamma_distribution<>;
 
 #define VOCAB 100000
-#define STRENGTH 5
-#define DISCOUNT 1
+#define STRENGTH 1
+#define DISCOUNT 0.5
 #define POISSON_A 0.2
 #define POISSON_B 0.1
 #define MAXLEN 100
@@ -113,7 +113,7 @@ void hpyp::load(const char *file) {
 	FILE *fp = NULL;
 	if ((fp = fopen(file, "rb")) == NULL)
 		throw "failed to open model file in hpyp::load";
-	load(file);
+	load(fp);
 	fclose(fp);
 }
 
@@ -570,7 +570,7 @@ void hpyp::remove(word& w, context *h) {
 			_bc->erase(w.id);
 		}
 	}
-	if (_bc->empty())
+	if (_bc && _bc->empty())
 		_bc = nullptr;
 	_cache.clear();
 }
@@ -586,7 +586,7 @@ void hpyp::remove(chunk& c, context *h) {
 		if ((*_cbc)[c.id].empty())
 			_cbc->erase(c.id);
 	}
-	if (_cbc->empty())
+	if (_cbc && _cbc->empty())
 		_cbc = nullptr;
 	_cache.clear();
 }
