@@ -427,12 +427,12 @@ double hpy::_lp(sentence& s, int i, int n) {
 		return lp;
 	//auto c = _nc->cs_search(s, i, n);
 	auto z = _nz->cs_search(s, i-1, n-1);
-	for (auto j = 1; j < z.size()+1; ++j) {
-		auto& r = _nz->val(z[j-1].second);
+	for (auto j = 0; j < z.size(); ++j) {
+		auto& r = _nz->val(z[j].second);
 		double tu = r.table;
 		double cu = r.customer;
-		double b = (*_strength)[j-1]+(*_discount)[j-1]*tu;
-		double d = (*_strength)[j-1]+cu;
+		double b = (*_strength)[j]+(*_discount)[j]*tu;
+		double d = (*_strength)[j]+cu;
 		lp += log(b) - log(d);
 		auto it = r.arrangements->find(s[i]);
 		if (it != r.arrangements->end()) {
@@ -440,7 +440,7 @@ double hpy::_lp(sentence& s, int i, int n) {
 			//auto a = _nc->getval(c[j].second);
 			double tuk = a.table->size();
 			double cuk = a.customer;
-			double p = cuk-(*_discount)[j-1]*tuk;
+			double p = cuk-(*_discount)[j]*tuk;
 			lp = math::lse(lp, log(p)-log(d));
 		}
 	}
@@ -453,13 +453,13 @@ double hpy::_lp(word& w, int i, int n) {
 		return lp;
 	//auto c = _nc->cs_search(w, i, n);
 	auto z = _nz->cs_search(w, i-1, n-1);
-	for (auto j = 1; j < z.size()+1; ++j) {
-		auto& r = _nz->val(z[j-1].second);
+	for (auto j = 0; j < z.size(); ++j) {
+		auto& r = _nz->val(z[j].second);
 		//auto r = _nz->getval(z[j-1].second);
 		double tu = r.table;
 		double cu = r.customer;
-		double b = (*_strength)[j-1]+(*_discount)[j-1]*tu;
-		double d = (*_strength)[j-1]+cu;
+		double b = (*_strength)[j]+(*_discount)[j]*tu;
+		double d = (*_strength)[j]+cu;
 		lp += log(b) - log(d);
 		auto it = r.arrangements->find(w[i]);
 		if (it != r.arrangements->end()) {
@@ -467,7 +467,7 @@ double hpy::_lp(word& w, int i, int n) {
 			//auto a = _nc->getval(c[j].second);
 			double tuk = a.table->size();
 			double cuk = a.customer;
-			double p = cuk-(*_discount)[j-1]*tuk;
+			double p = cuk-(*_discount)[j]*tuk;
 			lp = math::lse(lp, log(p)-log(d));
 		}
 	}
