@@ -4,6 +4,43 @@
 #include"da2.h"
 
 namespace npbnlp {
+	template<>
+		class code<unsigned int> {
+			public:
+				using code_serializer = void(*)(unsigned int&, FILE*);
+				using code_deserializer = void(*)(unsigned int&, FILE*);
+				code():_t(3) {}
+				virtual ~code(){}
+				long operator[](unsigned int x) {
+					if (x == 0)
+						return _t+1;
+					else if (x == _t)
+						return 1;
+					_id = std::max(_id, (long)x+1);
+					return 1+x;
+				}
+				void set_terminal(unsigned int k) {
+					_t = k;
+				}
+				long id() {
+					return _id+1;
+				}
+				void save(FILE *fp, code_serializer f) {
+					if (fwrite(&_id, sizeof(long), 1, fp) != 1)
+						throw "failed to write _id";
+					if (fwrite(&_t, sizeof(unsigned int), 1, fp) != 1)
+						throw "failed to write _t";
+				}
+				void load(FILE *fp, code_deserializer f) {
+					if (fread(&_id, sizeof(long), 1, fp) != 1)
+						throw "failed to load _id";
+					if (fread(&_t, sizeof(unsigned int), 1, fp) != 1)
+						throw "failed to load _t";
+				}
+			protected:
+				long _id;
+				unsigned int _t;
+		};
 	template<class V>
 		class sda : public da<unsigned int, V> {
 			public:
@@ -169,7 +206,8 @@ namespace npbnlp {
 							da<unsigned int,V>::_modify(b, s.id);
 					}
 					for (auto& s : t.sibling) {
-						long n = da<unsigned int,V>::_base[b] + da<unsigned int,V>::_c[s.id];
+						//long n = da<unsigned int,V>::_base[b] + da<unsigned int,V>::_c[s.id];
+						long n = da<unsigned int,V>::_base[b] + _c[s.id];
 						insert_subtree(s, n);
 					}
 				}
@@ -201,6 +239,7 @@ namespace npbnlp {
 				}
 			protected:
 				unsigned int _terminal;
+				code<unsigned int> _c;
 		};
 }
 
