@@ -42,13 +42,13 @@ namespace npbnlp {
 			}
 			static unsigned int c2i(const char *str, int size) {
 				if (size >= 3 && (str[0] & 0xF0) == 0xE0) {
-					return (unsigned int)((str[0] & 0x0F) << 12) | ((str[1] & 0x3F) << 6) | ((str[0] & 0x3F));
+					return (unsigned int)((str[0] & 0x0F) << 12) | ((str[1] & 0x3F) << 6) | ((str[2] & 0x3F));
 				} else if ((unsigned char)(str[0]) < 0x80) {
 					return (unsigned int)str[0];
 				} else if (size >= 2 && (str[0] & 0xE0) == 0xC0) {
 					return (unsigned int)(((str[0] & 0x1F) << 6) | (str[1] & 0x3F)) ;
 				} else if (size >= 4 && (str[0] & 0xF8) == 0xF0) {
-					return (unsigned int)((str[0] & 0x07) << 18 | (str[1] & 0x3F) << 12 | (str[2] & 0x3F) << 6 | (str[3] & 0x3F));
+					return (unsigned int)(((str[0] & 0x07) << 18) | ((str[1] & 0x3F) << 12) | ((str[2] & 0x3F) << 6) | (str[3] & 0x3F));
 				}
 				/*
 				unsigned int w = 0;
