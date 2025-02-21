@@ -9,6 +9,7 @@
 #include<cstdio>
 #include<algorithm>
 #include<iostream>
+#include<memory>
 namespace npbnlp {
 	template<class T>
 		class node {
@@ -32,8 +33,14 @@ namespace npbnlp {
 				}
 				virtual ~code() {
 				}
+				long get(T x) const {
+					const auto i = _c.find(x);
+					if (i == _c.end())
+						return -1;
+					return i->second;
+				}
 				long operator[](T x) {
-					auto i = _c.find(x);
+					const auto i = _c.find(x);
 					if (i == _c.end()) {
 						long id = _id;
 						_c[x] = _id++;
@@ -97,6 +104,10 @@ namespace npbnlp {
 				code() {
 				};
 				virtual ~code() {
+				}
+				long get(char x) const {
+					long y = (unsigned char)x;
+					return 1+y;
 				}
 				long operator[](char x) {
 					long y = (unsigned char)x;
@@ -300,6 +311,7 @@ namespace npbnlp {
 					long esize = _erased.size();
 					if (fread(&esize, sizeof(long), 1, fp) != 1)
 						return 1;
+					_erased.resize(esize,0);
 					if (fread(&_erased[0], sizeof(long), esize, fp) != (size_t)esize)
 						return 1;
 					long vsize = 0;
@@ -331,7 +343,11 @@ namespace npbnlp {
 				long _traverse(long b, T c) {
 					if (b >= (long)_base.size())
 						return -1;
-					long n = _base[b] + _c[c];
+					long code = _c.get(c);
+					if (code < 0)
+						return -1;
+					//long n = _base[b] + _c[c];
+					long n = _base[b] + code;
 					if (n >= (long)_base.size())
 						return -1;
 					if (_check[n] != b) {
@@ -522,7 +538,7 @@ namespace npbnlp {
 				}
 
 				bool _is_empty(long i) {
-					if (i >= (long)_base.size()) {
+					while (i >= (long)_base.size()) {
 						_extend();
 					}
 

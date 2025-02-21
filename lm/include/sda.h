@@ -4,12 +4,13 @@
 #include"da2.h"
 
 namespace npbnlp {
+	/*
 	template<>
 		class code<unsigned int> {
 			public:
 				using code_serializer = void(*)(unsigned int&, FILE*);
 				using code_deserializer = void(*)(unsigned int&, FILE*);
-				code():_t(3) {}
+				code():_id(3), _t(3) {}
 				virtual ~code(){}
 				long operator[](unsigned int x) {
 					if (x == 0)
@@ -41,6 +42,7 @@ namespace npbnlp {
 				long _id;
 				unsigned int _t;
 		};
+		*/
 	template<class V>
 		class sda : public da<unsigned int, V> {
 			public:
@@ -124,8 +126,10 @@ namespace npbnlp {
 					return da<unsigned int,V>::_value[id];
 				}
 				V& val(long id) {
-					if (id >= (long)da<unsigned int,V>::_value.size() || id < 0 || std::find(da<unsigned int,V>::_erased.begin(), da<unsigned int,V>::_erased.end(), id) != da<unsigned int,V>::_erased.end())
-						throw "found invalid id";
+					if (id >= (long)da<unsigned int,V>::_value.size() || id < 0 || std::find(da<unsigned int,V>::_erased.begin(), da<unsigned int,V>::_erased.end(), id) != da<unsigned int,V>::_erased.end()) {
+						std::cerr << "found invalid id:" << id << std::endl;
+						throw "found invalid id at val(int id)";
+					}
 					return da<unsigned int,V>::_value[id];
 				}
 				void insert(sentence& s, int i, int n) {
@@ -202,12 +206,13 @@ namespace npbnlp {
 				}
 				void insert_subtree(node<unsigned int>& t, long b) {
 					for (auto& s : t.sibling) {
-						if (da<unsigned int,V>::_add(b, s.id))
+						if (da<unsigned int,V>::_add(b, s.id)) {
 							da<unsigned int,V>::_modify(b, s.id);
+						}
 					}
 					for (auto& s : t.sibling) {
-						//long n = da<unsigned int,V>::_base[b] + da<unsigned int,V>::_c[s.id];
-						long n = da<unsigned int,V>::_base[b] + _c[s.id];
+						long n = da<unsigned int,V>::_base[b] + da<unsigned int,V>::_c[s.id];
+						//long n = da<unsigned int,V>::_base[b] + _c[s.id];
 						insert_subtree(s, n);
 					}
 				}
@@ -239,7 +244,7 @@ namespace npbnlp {
 				}
 			protected:
 				unsigned int _terminal;
-				code<unsigned int> _c;
+				//code<unsigned int> _c;
 		};
 }
 

@@ -173,12 +173,12 @@ bool hpy::_add(word& w, int i, int n) {
 		return true;
 	double lpr = _lp(w, i, n-1);
 	/*
-	auto c = _nc->rexactmatch(w, i, n);
-	if (c < 0) {
-		_nc->insert(w, i, n);
-		c = _nc->rexactmatch(w, i, n);
-	}
-	*/
+	   auto c = _nc->rexactmatch(w, i, n);
+	   if (c < 0) {
+	   _nc->insert(w, i, n);
+	   c = _nc->rexactmatch(w, i, n);
+	   }
+	   */
 	auto z = _nz->rexactmatch(w, i-1, n-1);
 	if (z < 0) {
 		_nz->insert(w, i-1, n-1);
@@ -329,17 +329,17 @@ void hpy::_estimate_d(vector<double>& a, vector<double>& b) {
 		}
 	}
 	/*
-	for (auto it = _nc->begin(); it != _nc->end(); ++it) {
-		if (it->n < 0) // erased node
-			continue;
-		for (auto& c : *it->table) {
-			for (auto j = 1; j < c; ++j) {
-				bernoulli_distribution::param_type mu( ((double)j-1)/((double)j-(*_discount)[it->n-1]) );
-				b[it->n-1] += 1. - d((*g)(), mu);
-			}
-		}
-	}
-	*/
+	   for (auto it = _nc->begin(); it != _nc->end(); ++it) {
+	   if (it->n < 0) // erased node
+	   continue;
+	   for (auto& c : *it->table) {
+	   for (auto j = 1; j < c; ++j) {
+	   bernoulli_distribution::param_type mu( ((double)j-1)/((double)j-(*_discount)[it->n-1]) );
+	   b[it->n-1] += 1. - d((*g)(), mu);
+	   }
+	   }
+	   }
+	   */
 }
 
 void hpy::_estimate_t(vector<double>& a, vector<double>& b) {

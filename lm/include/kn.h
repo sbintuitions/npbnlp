@@ -136,6 +136,7 @@ namespace npbnlp {
 			bool remove(word& w);
 			bool add(sentence& s);
 			bool remove(sentence& s);
+			void estimate(int iter){};
 			void set_discount(double d);
 			int save(const char *file);
 			int load(const char *file);
