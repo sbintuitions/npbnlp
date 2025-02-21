@@ -49,11 +49,27 @@ namespace npbnlp {
 				fwrite(&r.n, sizeof(int), 1, fp);
 				fwrite(&r.table, sizeof(int), 1, fp);
 				fwrite(&r.customer, sizeof(long), 1, fp);
+				int size = r.arrangements->size();
+				fwrite(&size, sizeof(int), 1, fp);
+				for (auto i : *r.arrangements) {
+					unsigned int k = i.first;
+					arrangement::key_writer(k, fp);
+					arrangement::val_writer(i.second, fp);
+				}
 			}
 			static void val_reader(restaurant& r, FILE *fp) {
 				fread(&r.n, sizeof(int), 1, fp);
 				fread(&r.table, sizeof(int), 1, fp);
 				fread(&r.customer, sizeof(long), 1, fp);
+				int size = 0;
+				fread(&size, sizeof(int), 1, fp);
+				for (auto i = 0; i < size; ++i) {
+					unsigned int k;
+					arrangement a;
+					arrangement::key_reader(k, fp);
+					arrangement::val_reader(a, fp);
+					(*r.arrangements)[k] = a;
+				}
 			}
 			restaurant();
 			restaurant(int n);
@@ -63,6 +79,7 @@ namespace npbnlp {
 			int n;
 			int table;
 			long customer;
+			std::shared_ptr<std::unordered_map<unsigned int, arrangement> > arrangements;
 	};
 	class hpy : public dalm {
 		public:
@@ -89,7 +106,7 @@ namespace npbnlp {
 			hpy *_base;
 			std::shared_ptr<std::vector<double> > _discount;
 			std::shared_ptr<std::vector<double> > _strength;
-			std::shared_ptr<sda<arrangement> > _nc;
+			//std::shared_ptr<sda<arrangement> > _nc;
 			std::shared_ptr<sda<restaurant> > _nz;
 			bool _add(word& w, int i, int n);
 			bool _remove(word& w, int i, int n);

@@ -12,6 +12,8 @@ namespace npbnlp {
 	class io {
 		public:
 			static unsigned int u8size(const char  *c) {
+			       	return "\1\1\1\1\1\1\1\1\1\1\1\1\2\2\3\4"[(*c & 0xFF) >> 4];
+				/*
 				const unsigned char uc = *c;
 				if (uc <= 0x7F)
 					return 1;
@@ -22,6 +24,7 @@ namespace npbnlp {
 				else if (uc <= 0xF7)
 					return 4;
 				throw "undefined character in utf-8";
+				*/
 			}
 			static unsigned int u8strlen(const char *c) {
 				unsigned int shift = 0;
@@ -38,14 +41,54 @@ namespace npbnlp {
 				return count;
 			}
 			static unsigned int c2i(const char *str, int size) {
+				if (size >= 3 && (str[0] & 0xF0) == 0xE0) {
+					return (unsigned int)((str[0] & 0x0F) << 12) | ((str[1] & 0x3F) << 6) | ((str[2] & 0x3F));
+				} else if ((unsigned char)(str[0]) < 0x80) {
+					return (unsigned int)str[0];
+				} else if (size >= 2 && (str[0] & 0xE0) == 0xC0) {
+					return (unsigned int)(((str[0] & 0x1F) << 6) | (str[1] & 0x3F)) ;
+				} else if (size >= 4 && (str[0] & 0xF8) == 0xF0) {
+					return (unsigned int)(((str[0] & 0x07) << 18) | ((str[1] & 0x3F) << 12) | ((str[2] & 0x3F) << 6) | (str[3] & 0x3F));
+				}
+				/*
 				unsigned int w = 0;
 				unsigned char *c = (unsigned char*)&w; 
 				for (int i = 0; i < size; ++i) {
 					*(c+i) = (const unsigned char)*(str+i);
 				}
 				return w;
+				*/
 			}
 			static int i2c(unsigned int c, char *buf) {
+				if (c == 0) {
+					buf[0] = '\0';
+					return 0;
+				} else if (c <= 0x7F) {
+					*buf = (char)c;
+					return 1;
+				} else if (c <= 0x7FF) {
+					buf[1] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[0] = 0xC0 | c;
+					return 2;
+				} else if (c <= 0xFFFF) {
+					buf[2] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[1] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[0] = 0xE0 | c;
+					return 3;
+				} else {
+					buf[3] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[2] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[1] = 0x80 | (c & 0x3F);
+					c >>= 6;
+					buf[0] = 0xF0 | c;
+					return 4;
+				}
+				/*
 				int size = io::u8size((char*)&c);
 				unsigned char *w = (unsigned char*)&c;
 				for (int i = 0; i < size; ++i) {
@@ -53,6 +96,7 @@ namespace npbnlp {
 				}
 				*(buf+size) = '\0';
 				return size;
+				*/
 			}
 			static void chomp(char *str) {
 				int len = std::strlen(str);

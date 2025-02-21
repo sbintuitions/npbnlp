@@ -15,6 +15,7 @@ namespace npbnlp {
 			virtual bool add(sentence& s) = 0;
 			virtual bool remove(word& w) = 0;
 			virtual bool remove(sentence& s) = 0;
+			virtual void estimate(int iter) = 0;
 			virtual int save(const char *file) = 0;
 			virtual int load(const char *file) = 0;
 	};
