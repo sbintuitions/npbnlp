@@ -21,10 +21,10 @@ add_executable(fkappa fleiss_kappa.cc cio.cc)
 #add_library(sb SHARED sbd.cc usbd.cc usbd_l.cc usbd_w.cc)
 add_library(sb SHARED usbd.cc usbd_l.cc usbd_w.cc)
 
-target_compile_options(sbd PUBLIC
-	$<$<CONFIG:Release>:-O3 -std=c++17>
-	$<$<CONFIG:Debug>:-g -std=c++17>
-	)
+#target_compile_options(sbd PUBLIC
+#	$<$<CONFIG:Release>:-O3 -std=c++17>
+#	$<$<CONFIG:Debug>:-g -std=c++17>
+#	)
 
 find_package(Boost COMPONENTS serialization REQUIRED)
 find_package(OpenMP)
@@ -56,5 +56,5 @@ endif()
 
 #target_link_directories(sbd PUBLIC /usr/local/lib)
 target_link_directories(usbd PUBLIC /usr/local/lib)
-target_link_directories(pcc PUBLIC /usr/local/lib)
+#target_link_directories(pcc PUBLIC /usr/local/lib)
 target_link_directories(sb PUBLIC /usr/local/lib)
