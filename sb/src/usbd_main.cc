@@ -363,7 +363,7 @@ void mcmc() {
 				bd.save(snapshot);
 			}
 		}
-		if (i%dmp == 0)
+		if (dmp && i%dmp == 0)
 			dump(file, boundaries);
 	}
 #else
@@ -403,7 +403,7 @@ void mcmc() {
 				bd.save(snapshot);
 			}
 		}
-		if (i%dmp == 0)
+		if (dmp && i%dmp == 0)
 			dump(file, boundaries);
 	}
 #endif
