@@ -385,7 +385,7 @@ void usbd_l::_parse(io& f, vector<int>& b) {
 			int b = min(j-1, _n-2);
 			int e = min(j, _n-1);
 			double lp_bos = bos[t-j+1][b];
-			double lp_eos = eos[t+j][e];
+			double lp_eos = eos[t+1][e];
 			double lp = cum[t]-cum[t-j+b+1]+lp_bos+lp_eos;
 			dp[t][j-1].v = lp+alpha[t-j];
 		}
