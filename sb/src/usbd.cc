@@ -115,5 +115,5 @@ void bd_wrap::sample(io& f, vector<int>& b) {
 
 void bd_wrap::parse(io& f, vector<int>& b) {
 	if (_d)
-		_d->sample(f, b);
+		_d->parse(f, b);
 }
