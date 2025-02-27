@@ -59,6 +59,7 @@ void usage(int argc, char **argv) {
 	cout << "--pretrain =file(use as pretraining dataset in training\n";
 	cout << "--sequence_type token_type(letter or word, default:letter)\n";
 	cout << "--smoothing lm_type(kn or hpy, default:hpy)\n";
+	cout << "--dic =file(word_dic to use option --sequence_type word default:usbd.dic)\n";
 	cout << "--epoch =int(default:" << epoch << ")\n";
 	cout << "--threads =int(default:" << threads << ")\n";
 	cout << "--punc =string(default:" << punc << ")\n";
@@ -90,6 +91,9 @@ int read_long_param(const char *opt, const char *arg) {
 		return 0;
 	} else if (check(opt, "model")) {
 		model = arg;
+		return 0;
+	} else if (check(opt, "dic")) {
+		dic = arg;
 		return 0;
 	} else if (check(opt, "threads")) {
 		threads = atoi(arg);
@@ -153,6 +157,7 @@ int read_param(int argc, char **argv) {
 			{"pretrain", required_argument, 0, 0},
 			{"validation", required_argument, 0, 0},
 			{"model", required_argument, 0, 0},
+			{"dic", required_argument, 0, 0},
 			{"threads", required_argument, 0, 0},
 			{"epoch", required_argument, 0, 0},
 			{"punctuation", required_argument, 0, 0},
