@@ -129,7 +129,7 @@ namespace npbnlp {
 				using code_serializer = void(*)(T&, FILE*);
 				using code_deserializer = void(*)(T&, FILE*);
 				using rst = std::vector<std::pair<int, long> >;
-				da(T terminal):_nid(1),_m(0) {
+				da(T terminal):_nid(1),_m(0),_terminal(terminal) {
 					_base.resize(8192, 0);
 					_check.resize(8192, -1);
 					_check[0] = 0;
@@ -319,6 +319,7 @@ namespace npbnlp {
 				using code_t = code<T>;
 				long _nid;
 				long _m;
+				T _terminal;
 				code_t _c;
 				std::vector<long> _base;
 				std::vector<long> _check;
@@ -510,7 +511,7 @@ namespace npbnlp {
 					for (auto& s : subtree.sibling) {
 						long n = _base[b] + _c[s.id];
 						_check[n] = b;
-						if (s.id == 0 && s.sibling.empty())
+						if (s.id == _terminal && s.sibling.empty())
 							_base[n] = -_next_nid();
 					}
 					_update_offset();

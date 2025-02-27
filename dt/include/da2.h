@@ -131,7 +131,7 @@ namespace npbnlp {
 				using code_serializer = void(*)(T&, FILE*);
 				using code_deserializer = void(*)(T&, FILE*);
 				using rst = std::vector<std::pair<int, long> >;
-				da(T terminal):_nid(1) {
+				da(T terminal):_nid(1),_terminal(terminal) {
 					_base.resize(8192);
 					_check.resize(8192);
 					// init doubly linked list
@@ -339,6 +339,7 @@ namespace npbnlp {
 				long _head;
 				long _tail;
 				long _listsize;
+				T _terminal;
 
 				long _traverse(long b, T c) {
 					if (b >= (long)_base.size())
@@ -589,7 +590,7 @@ namespace npbnlp {
 						long n = _base[b] + _c[s.id];
 						_delink(n);
 						_check[n] = b;
-						if (s.id == 0 && s.sibling.empty())
+						if (s.id == _terminal && s.sibling.empty())
 							_base[n] = -_next_nid();
 					}
 					for (auto& s : subtree.sibling) {
