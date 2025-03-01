@@ -4,7 +4,7 @@
 #include"beta.h"
 #include"rd.h"
 #include<random>
-#define BUFSIZE 1024
+#define BUFSIZE 256
 
 using namespace std;
 using namespace npbnlp;
