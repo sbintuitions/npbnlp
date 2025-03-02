@@ -243,6 +243,7 @@ void usbd_w::init(cio& c, int n) {
 void usbd_w::sample(io& d, vector<int>& b) {
 	sentence s = _load_sentence(d, false);
 	if (s.size() > BUFSIZE) {
+		int prev_i = 0;
 		int i = 0;
 		while (i < s.size()) {
 			sentence ss;
@@ -267,6 +268,9 @@ void usbd_w::sample(io& d, vector<int>& b) {
 				for (auto k = 1; k < (int)c.size(); ++k)
 					b.emplace_back(c[k]);
 			}
+			if (i+ss.size() == s.size())
+				break;
+			prev_i = i;
 			if (c.size() > 2) {
 				auto j = ss.size()-1;
 				for (; j > 0; --j) {
@@ -274,10 +278,21 @@ void usbd_w::sample(io& d, vector<int>& b) {
 						break;
 					}
 				}
-				i = j;
+				i += j;
 			} else {
 				//i = min((int)s.size(), i+BUFSIZE/2);
 				i = min((int)s.size(), i+BUFSIZE-_n);
+			}
+			if (prev_i == i) {
+				cerr << "found loop " << prev_i << " == " << i << endl;
+				cerr << "s.size():" << s.size() << " ss.size():" << ss.size() << " i+ss.size():" << i+ss.size() << endl;
+				cerr << "c.size():" << c.size() << endl;
+				for (auto& j : c) {
+					cerr << j << " ";
+				}
+				cerr << endl;
+				cerr << "c[" << c.size()-2 << "]:" << c[c.size()-2] << " ss.w[" << i << "].head = " << ss.w[i].head << endl;
+				exit(1);
 			}
 		}
 	} else {
