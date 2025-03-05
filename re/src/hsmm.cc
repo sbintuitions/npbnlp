@@ -59,16 +59,26 @@ void hsmm::poisson_correction(int n) {
 }
 
 void hsmm::add(vector<pair<word, vector<unsigned int> > >& s) {
+	shared_ptr<wid> dic = wid::create();
 	int rd[s.size()] = {0};
 	rd::shuffle(rd, s.size());
 	for (auto i = 0; i < (int)s.size(); ++i) {
 		word& w = s[rd[i]].first;
+		w.id = dic->index(w);
 		_word->add(w, _word->h());
 	}
 	vector<unsigned int> p;
 	for (auto& x : s) {
 		for (auto& i : x.second) {
 			p.emplace_back(i);
+		}
+		for (auto i = 0; i < (int)x.second.size(); ++i) {
+			context *c = _phonetic->h();
+			for (auto j = i-1; j > i-_m; --j) {
+				int k = (j >= 0)? x.second[j] : 0;
+				c = c->make(k);
+			}
+			_phonetic->add(x.second[i], c);
 		}
 		/*
 		// bos of reading for word unigram
@@ -107,6 +117,14 @@ void hsmm::remove(vector<pair<word, vector<unsigned int> > >& s) {
 	for (auto& x : s) {
 		for (auto& i : x.second) {
 			p.emplace_back(i);
+		}
+		for (auto i = 0; i < (int)x.second.size(); ++i) {
+			context *c = _phonetic->h();
+			for (auto j = i-1; j > i-_m; --j) {
+				int k = (j >= 0)? x.second[j] : 0;
+				c = c->find(k);
+			}
+			_phonetic->remove(x.second[i], c);
 		}
 		/*
 		// bos of reading for word unigram
@@ -221,7 +239,8 @@ vector<pair<word, vector<unsigned int> > > hsmm::parse(io& f, int i) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			ynode& cur = l.get(t, j);
 			_precalc(cur);
-			double lp_w = _word->lp(cur.w, _word->h());
+			//double lp_w = _word->lp(cur.w, _word->h());
+			double lp_w = _word->lp(cur.w, _word->h())+(cur.bos+cur.prod+cur.eos)/cur.phonetic.size();
 			for (auto k = 0; k < l.size(t-cur.w.len); ++k) {
 				ynode& prev = l.get(t-cur.w.len, k);
 				dp[t][j].v = math::lse(dp[t][j].v, dp[t-cur.w.len][k].v+lp_w+_transition(prev, cur), !dp[t][j].is_init());
@@ -311,7 +330,6 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 
 void hsmm::_precalc(ynode& n) {
 	// bos
-	/*
 	for (auto i = 0; i < min(_m-1,(int)n.phonetic.size()); ++i) {
 		context *c = _phonetic->h();
 		for (auto j = i-1; j > i-_m; --j) {
@@ -333,7 +351,6 @@ void hsmm::_precalc(ynode& n) {
 		e = h;
 	}
 	n.eos = _phonetic->lp(0, e);
-	*/
 	// product
 	for (auto i = _m-1; i < (int)n.phonetic.size(); ++i) {
 		context *c = _phonetic->h();
