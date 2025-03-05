@@ -229,8 +229,10 @@ int mcmc() {
 		g = new io(supervised.c_str());
 		pretrain(lm, *g);
 	}
+	/*
 	lm.init(f, corpus);
 	lm.estimate(1);
+	*/
 #ifdef _OPENMP
 	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
