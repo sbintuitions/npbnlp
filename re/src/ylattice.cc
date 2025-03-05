@@ -63,7 +63,8 @@ ylattice::ylattice(io& f, int i, trie& t, trie *unit) {
 					}
 				}
 			}
-		} else if (y[j].empty()) {
+		}
+		if (y[j].empty()) {
 			word w(*f.raw, head+j, 1);
 			w.id = 1; // unk
 			vector<unsigned int> n(1, 0);
