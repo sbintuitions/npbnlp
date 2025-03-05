@@ -42,7 +42,7 @@ ylattice::ylattice(io& f, int i, trie& t, trie *unit) {
 		auto r = t.cp_search(key);
 		for (auto& n : r) {
 			word w(*f.raw, head+j, n.first);
-			w.id = d->index(w);
+			w.id = (*d)[w];
 			auto v = t.getval(n.second);
 			if (v) {
 				for (auto& m : v.value()) {
