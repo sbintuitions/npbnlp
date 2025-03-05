@@ -27,7 +27,7 @@ static string test;
 static string model("koyomi.model");
 static string wdic("koyomi.wdic");
 static string triedic("trie.idx");
-static string unkdic("");
+static string unitdic("");
 
 void progress(int i, double pct) {
 	int val = (int) (pct * 100);
@@ -45,6 +45,7 @@ void usage(int argc, char **argv) {
 	cout << *argv << " --train file --model file_to_save --dic word_dic --trie phonetic_dic\n";
 	cout << *argv << " --parse file --model modelfile --dic word_dic --trie phonetic_dic\n";
 	cout << "[options]\n";
+	cout << "--unit=file(phonetic_dic for unit word)\n";
 	cout << "-n, --letter_order=int(default 10)\n";
 	cout << "-m, --phonetic_order=int(default 3)\n";
 	cout << "-e, --epoch=int(default 100)\n";
@@ -65,8 +66,8 @@ int read_long_param(const char *opt, const char *arg) {
 		wdic = arg;
 	else if (check(opt, "trie"))
 		triedic = arg;
-	//else if (check(opt, "unk"))
-	//	unkdic = arg;
+	else if (check(opt, "unit"))
+		unitdic = arg;
 	else if (check(opt, "supervised"))
 		supervised = arg;
 	else if (check(opt, "letter_order"))
@@ -99,7 +100,7 @@ int read_param(int argc, char **argv) {
 			{"parse", required_argument, 0, 0},
 			{"dic", required_argument, 0, 0},
 			{"trie", required_argument, 0, 0},
-			//{"unk", required_argument, 0, 0},
+			{"unit", required_argument, 0, 0},
 			{"supervised", required_argument, 0, 0},
 			{"model", required_argument, 0, 0},
 			{"letter_order", required_argument, 0, 0},
@@ -220,7 +221,7 @@ int mcmc() {
 	int size = f.head.size()-1;
 	//vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
 	vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
-	hsmm lm(n, m, triedic.c_str());
+	hsmm lm(n, m, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
 	//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
 	lm.set(vocab);
 	io *g = NULL;
@@ -307,7 +308,7 @@ int parse() {
 	shared_ptr<wid> d = wid::create();
 	d->load(wdic.c_str());
 	//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
-	hsmm lm(n, m, triedic.c_str());
+	hsmm lm(n, m, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
 	lm.load(model.c_str());
 #ifdef _OPENMP
 	threads = min(omp_get_max_threads(), threads);

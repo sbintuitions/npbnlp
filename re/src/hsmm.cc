@@ -9,18 +9,26 @@
 using namespace std;
 using namespace npbnlp;
 
-hsmm::hsmm(const char *dic):_n(10),_m(3),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)) {
+hsmm::hsmm(const char *dic, const char *unit):_n(10),_m(3),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)),_unit(nullptr) {
 	_dic->load(dic, hsmm::vv_reader, hsmm::uint_reader);
 	_letter->set_v(C);
 	_phonetic->set_v(P);
 	_word->set_base(_letter.get());
+	if (unit) {
+		_unit = shared_ptr<trie>(new trie(3));
+		_unit->load(unit, hsmm::vv_reader, hsmm::uint_reader);
+	}
 }
 
-hsmm::hsmm(int n, int m, const char *dic):_n(n),_m(m),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)) {
+hsmm::hsmm(int n, int m, const char *dic, const char *unit):_n(n),_m(m),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)),_unit(nullptr) {
 	_dic->load(dic, hsmm::vv_reader, hsmm::uint_reader);
 	_letter->set_v(C);
 	_phonetic->set_v(P);
 	_word->set_base(_letter.get());
+	if (unit) {
+		_unit = shared_ptr<trie>(new trie(3));
+		_unit->load(unit, hsmm::vv_reader, hsmm::uint_reader);
+	}
 }
 
 hsmm::~hsmm() {
@@ -172,7 +180,7 @@ void hsmm::init(io& f, vector<vector<pair<word, vector<unsigned int> > > >& c) {
 }
 
 vector<pair<word, vector<unsigned int> > > hsmm::sample(io& f, int i) {
-	ylattice l(f, i, *_dic);
+	ylattice l(f, i, *_dic, _unit.get());
 	vt dp;
 	for (auto t = 0; t < (int)l.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
@@ -207,7 +215,7 @@ vector<pair<word, vector<unsigned int> > > hsmm::sample(io& f, int i) {
 }
 
 vector<pair<word, vector<unsigned int> > > hsmm::parse(io& f, int i) {
-	ylattice l(f, i, *_dic);
+	ylattice l(f, i, *_dic, _unit.get());
 	vt dp;
 	for (auto t = 0; t < (int)l.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
@@ -259,9 +267,9 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 		}
 		diff += _phonetic->lp(cur.phonetic[i],c);
 	}
-	double lp = prev.bos + prev.prod + diff;
+	double lp = /*prev.bos +*/ prev.prod + diff;
 	if ((int)cur.phonetic.size() >= _m) {
-		lp += cur.prod + cur.eos;
+		lp += cur.prod /*+ cur.eos*/;
 	} else {
 		int size = cur.phonetic.size();
 		for (auto i = _m-1; i < size; ++i) {
@@ -280,6 +288,7 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 			}
 			lp += _phonetic->lp(cur.phonetic[i], c);
 		}
+		/* // eos
 		context *e = _phonetic->h();
 		for (auto j = cur.phonetic.size()-1; j > cur.phonetic.size()-_m; --j) {
 			int p = 0;
@@ -294,6 +303,7 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 			e = h;
 		}
 		lp += _phonetic->lp(0, e);
+		*/
 	}
 	return lp/(prev.phonetic.size()+cur.phonetic.size());
 }
@@ -301,6 +311,7 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 
 void hsmm::_precalc(ynode& n) {
 	// bos
+	/*
 	for (auto i = 0; i < min(_m-1,(int)n.phonetic.size()); ++i) {
 		context *c = _phonetic->h();
 		for (auto j = i-1; j > i-_m; --j) {
@@ -322,6 +333,7 @@ void hsmm::_precalc(ynode& n) {
 		e = h;
 	}
 	n.eos = _phonetic->lp(0, e);
+	*/
 	// product
 	for (auto i = _m-1; i < (int)n.phonetic.size(); ++i) {
 		context *c = _phonetic->h();

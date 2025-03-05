@@ -23,7 +23,7 @@ namespace npbnlp {
 	class ylattice {
 		using trie = da<unsigned int, std::vector<std::vector<unsigned int> > >;
 		public:
-			ylattice(io& f, int i, trie& t);
+			ylattice(io& f, int i, trie& t, trie* u);
 			virtual ~ylattice();
 			std::vector<unsigned int> query;
 			std::vector<std::vector<ynode> > y;

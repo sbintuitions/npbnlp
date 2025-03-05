@@ -38,8 +38,8 @@ namespace npbnlp {
 					fread(&v[i][0], sizeof(unsigned int), s, fp);
 				}
 			}
-			hsmm(const char *dic);
-			hsmm(int n, int m, const char *dic);
+			hsmm(const char *dic, const char *unit = NULL);
+			hsmm(int n, int m, const char *dic, const char *unit = NULL);
 			virtual ~hsmm();
 			virtual void add(std::vector<std::pair<word, std::vector<unsigned int> > >& seq);
 			virtual void remove(std::vector<std::pair<word, std::vector<unsigned int> > >& seq);
@@ -62,6 +62,7 @@ namespace npbnlp {
 			std::shared_ptr<vpyp> _letter;
 			std::shared_ptr<hpyp> _phonetic;
 			std::shared_ptr<trie> _dic;
+			std::shared_ptr<trie> _unit;
 			void _precalc(ynode& n);
 			double _transition(ynode& prev, ynode& cur);
 	};
