@@ -220,7 +220,8 @@ int mcmc() {
 	io f(train.c_str());
 	int size = f.head.size()-1;
 	//vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
-	vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
+	//vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
+	vector<vector<pair<word, vector<unsigned int> > > > corpus;
 	hsmm lm(n, m, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
 	//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
 	lm.set(vocab);
@@ -229,10 +230,8 @@ int mcmc() {
 		g = new io(supervised.c_str());
 		pretrain(lm, *g);
 	}
-	/*
 	lm.init(f, corpus);
 	lm.estimate(1);
-	*/
 #ifdef _OPENMP
 	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
@@ -244,13 +243,12 @@ int mcmc() {
 		rd::shuffle(rd->data(), size);
 		int j = 0;
 		while (j < size) {
-			if (i > 0)
-				for (auto t = 0; t < threads; ++t) {
-					if (j+t < (int)size) {
-						//lm.remove(corpus[rd[j+t]]);
-						lm.remove(corpus[(*rd)[j+t]]);
-					}
+			for (auto t = 0; t < threads; ++t) {
+				if (j+t < (int)size) {
+					//lm.remove(corpus[rd[j+t]]);
+					lm.remove(corpus[(*rd)[j+t]]);
 				}
+			}
 #ifdef _OPENMP
 #pragma omp parallel
 			{

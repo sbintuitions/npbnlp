@@ -195,6 +195,24 @@ void hsmm::load(const char *file) {
 }
 
 void hsmm::init(io& f, vector<vector<pair<word, vector<unsigned int> > > >& c) {
+	int n = f.head.size()-1;
+	shared_ptr<generator> r = generator::create();
+	for (auto i = 0; i < n; ++i) {
+		ylattice l(f, i, *_dic, _unit.get());
+		vector<pair<word, vector<unsigned int> > > s;
+		ynode *node = l.getp(l.size(), 0);
+		s.emplace_back(make_pair(node->w, node->phonetic));
+		auto t = (int)l.size()-node->w.len;
+		while (t >= 0) {
+			int j = (*r)()()%(l.size(t));
+			node = l.getp(t, j);
+			s.push_back(make_pair(node->w, node->phonetic));
+			t -= node->w.len;
+		}
+		reverse(s.begin(), s.end());
+		add(s);
+		c.emplace_back(s);
+	}
 }
 
 vector<pair<word, vector<unsigned int> > > hsmm::sample(io& f, int i) {
