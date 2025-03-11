@@ -486,14 +486,17 @@ namespace npbnlp {
 					}
 					auto prev = -_base[b];
 					auto next = -_check[b];
-					_base[next] = _base[b];
-					_check[prev] = _check[b];
 					if (b == _head) {
 						_head = next;
+						_base[_head] = -prev;
 						//_base[_head] = -prev;
 					} else if (b == _tail) {
 						_tail = prev;
+						_check[_tail] = -next;
 						//_check[_tail] = -next;
+					} else {
+						_base[next] = _base[b];
+						_check[prev] = _check[b];
 					}
 					_base[b] = 0;
 					_check[b] = 0;
