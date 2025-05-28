@@ -104,9 +104,11 @@ namespace npbnlp {
 			bool add(sentence& s);
 			bool remove(sentence& s);
 			void estimate(int iter);
+			void gibbs(int iter);
 			int save(const char *file);
 			int load(const char *file);
 		protected:
+			using base_corpus = std::unordered_map<int, std::vector<word> >;
 			int _n;
 			int _v;
 			hpy *_base;
@@ -114,6 +116,7 @@ namespace npbnlp {
 			std::shared_ptr<std::vector<double> > _strength;
 			//std::shared_ptr<sda<arrangement> > _nc;
 			std::shared_ptr<sda<restaurant> > _nz;
+			std::shared_ptr<base_corpus> _bc;
 			bool _add(word& w, int i, int n);
 			bool _remove(word& w, int i, int n);
 			bool _add(sentence& s, int i, int n);

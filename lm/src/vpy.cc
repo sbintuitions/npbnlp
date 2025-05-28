@@ -50,8 +50,15 @@ bool vpy::add(word& w) {
 bool vpy::add(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
 		int n = _draw_n(s, i);
-		_add(s, i, n);
+		bool add_to_base = _add(s, i, n);
 		s.n[i] = n;
+		if (add_to_base && _base) {
+			if (_bc == nullptr)
+				_bc = shared_ptr<base_corpus>(new base_corpus);
+			word w = s.wd(i);
+			_base->add(w);
+			(*_bc)[w.id].emplace_back(w);
+		}
 	}
 	return true;
 }
@@ -67,8 +74,17 @@ bool vpy::remove(word& w) {
 bool vpy::remove(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
 		int n = s.n[i];
-		_remove(s, i, n);
+		bool remove_from_base = _remove(s, i, n);
+		if (remove_from_base && _base) {
+			int size = (*_bc)[s[i]].size();
+			int id = (*generator::create())()()%size;
+			word& b = (*_bc)[s[i]][id];
+			_base->remove(b);
+			(*_bc)[s[i]].erase((*_bc)[s[i]].begin()+id);
+		}
 	}
+	if (_bc && _bc->empty())
+		_bc = nullptr;
 	return true;
 }
 
@@ -90,7 +106,9 @@ double vpy::_lp(word& w, int i, int n) {
 }
 
 double vpy::_lp(sentence& s, int i, int n) {
-	if (n == 0)
+	if (n == 0 && _base)
+		return _base->lp(s.wd(i));
+	else if (n ==0)
 		return -log(_v);
 	double lp = 0;
 	double z = 0;
@@ -147,7 +165,7 @@ bool vpy::_add(word& w, int i, int n) {
 	} else {
 		(*arr.table)[id]++;
 	}
-	return true;
+	return false;
 }
 
 bool vpy::_add(sentence& s, int i, int n) {
@@ -191,7 +209,7 @@ bool vpy::_add(sentence& s, int i, int n) {
 	} else {
 		(*arr.table)[id]++;
 	}
-	return true;
+	return false;
 }
 
 bool vpy::_remove(word& w, int i, int n) {
@@ -228,7 +246,7 @@ bool vpy::_remove(word& w, int i, int n) {
 			_nz->erase(w, i-1, n-1);
 		return _remove(w, i, n-1);
 	}
-	return true;
+	return false;
 }
 
 bool vpy::_remove(sentence& s, int i, int n) {
@@ -265,7 +283,7 @@ bool vpy::_remove(sentence& s, int i, int n) {
 			_nz->erase(s, i-1, n-1);
 		return _remove(s, i, n-1);
 	}
-	return true;
+	return false;
 }
 
 int vpy::_draw_n(word& w, int i) {
