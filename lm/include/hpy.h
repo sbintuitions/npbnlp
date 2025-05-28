@@ -49,6 +49,8 @@ namespace npbnlp {
 				fwrite(&r.n, sizeof(int), 1, fp);
 				fwrite(&r.table, sizeof(int), 1, fp);
 				fwrite(&r.customer, sizeof(long), 1, fp);
+				fwrite(&r.stop, sizeof(int), 1, fp);
+				fwrite(&r.pass, sizeof(int), 1, fp);
 				int size = r.arrangements->size();
 				fwrite(&size, sizeof(int), 1, fp);
 				for (auto i : *r.arrangements) {
@@ -61,6 +63,8 @@ namespace npbnlp {
 				fread(&r.n, sizeof(int), 1, fp);
 				fread(&r.table, sizeof(int), 1, fp);
 				fread(&r.customer, sizeof(long), 1, fp);
+				fread(&r.stop, sizeof(int), 1, fp);
+				fread(&r.pass, sizeof(int), 1, fp);
 				int size = 0;
 				fread(&size, sizeof(int), 1, fp);
 				for (auto i = 0; i < size; ++i) {
@@ -79,6 +83,8 @@ namespace npbnlp {
 			int n;
 			int table;
 			long customer;
+			int stop;
+			int pass;
 			std::shared_ptr<std::unordered_map<unsigned int, arrangement> > arrangements;
 	};
 	class hpy : public dalm {
