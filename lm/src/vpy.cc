@@ -327,4 +327,3 @@ int vpy::_draw_n(sentence& s, int i) {
 	}
 	return 1+rd::ln_draw(table);
 }
-

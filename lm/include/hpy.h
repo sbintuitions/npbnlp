@@ -98,11 +98,15 @@ namespace npbnlp {
 			double lp(sentence& s, int i);
 			double lp(word& w);
 			double lp(sentence& s);
+			double lp(std::vector<int>& p, int i);
+			double lp(std::vector<int>& p);
 			void set_base(hpy *b);
 			bool add(word& w);
 			bool remove(word& w);
 			bool add(sentence& s);
 			bool remove(sentence& s);
+			bool add(std::vector<int>& p);
+			bool remove(std::vector<int>& p);
 			void estimate(int iter);
 			void gibbs(int iter);
 			int save(const char *file);
@@ -121,8 +125,11 @@ namespace npbnlp {
 			bool _remove(word& w, int i, int n);
 			bool _add(sentence& s, int i, int n);
 			bool _remove(sentence& s, int i, int n);
+			bool _add(std::vector<int>& p, int i, int n);
+			bool _remove(std::vector<int>& p, int i, int n);
 			double _lp(sentence& s, int i, int n);
 			double _lp(word& w, int i, int n);
+			double _lp(std::vector<int>& p, int i, int n);
 			void _estimate_d(std::vector<double>& a, std::vector<double>& b);
 			void _estimate_t(std::vector<double>& a, std::vector<double>& b);
 	};
