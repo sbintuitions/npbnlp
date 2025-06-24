@@ -27,11 +27,16 @@ hmm::lattice::lattice(int z, vector<pair<word, vector<unsigned int> > >& s, vect
 			h = u;
 		word *cur_w = wp(t);
 		vector<unsigned int> *cur_r = rp(t);
-		vector<double> table;
+		vector<double> table; // p(k|w,phn,z)
+		double lpm = 0; // \sum_k p(w,phn|k)p(k|z) = p(w,phn|z)
 		for (auto k = 1; k < z; ++k) {
-			double lp_em = lpr(*cur_w, *cur_r, *wd[k], *phn[k]);
-			double lp_pos = pos.lp(k, h);
-			table.emplace_back(lp_em+lp_pos);
+			double lp_em = lpr(*cur_w, *cur_r, *wd[k], *phn[k]); // p(w,phn|k)
+			double lp_pos = pos.lp(k, h); // p(k|z)
+			lpm += lp_em + lp_pos;
+			table.emplace_back(lp_em+pos.lp(k, pos.h())); // p(w,phn|k)p(k)
+		}
+		for (auto& k : table) {
+			k -= lpm; // p(k|w,phn,z) \propto p(w,phn,k)/p(w,phn|z)
 		}
 		int id = rd::ln_draw(table);
 		double mu = log(be(1,1))+table[id];
@@ -41,6 +46,32 @@ hmm::lattice::lattice(int z, vector<pair<word, vector<unsigned int> > >& s, vect
 				k[t].emplace_back(i+1);
 		}
 	}
+	/*
+	for (auto t = 0; t < len; ++t) {
+		context *h = pos.h();
+		word *prev_w = wp(t-1);
+		context *u = h->find(prev_w->pos);
+		if (u)
+			h = u;
+		word *cur_w = wp(t);
+		vector<unsigned int> *cur_r = rp(t);
+		vector<double> table;
+		for (auto k = 1; k < z; ++k) {
+			double lp_em = lpr(*cur_w, *cur_r, *wd[k], *phn[k]); // p(w,phn|k)
+			double lp_pos = pos.lp(k, h); // p(k|z)
+			table.emplace_back(lp_em+lp_pos); // p(w,phn|k)p(k|z)
+							  // \sum_k p(w,phn|k)p(k|z) = p(w,phn|z)
+							  // p(k|w,phn,z) \propto p(w,phn|k)p(k)/p(w,phn|z)
+		}
+		int id = rd::ln_draw(table);
+		double mu = log(be(1,1))+table[id];
+		cur_w->pos = id+1;
+		for (auto i = 0; i < (int)table.size(); ++i) {
+			if (table[i] >= mu)
+				k[t].emplace_back(i+1);
+		}
+	}
+	*/
 }
 
 hmm::lattice::~lattice() {
