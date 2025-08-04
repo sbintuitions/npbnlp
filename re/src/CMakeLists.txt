@@ -17,6 +17,7 @@ add_executable(idx index.cc)
 add_executable(cps common_prefix_search.cc)
 #add_executable(koyomi koyomi.cc hsmm.cc ylattice.cc trie.cc)
 add_executable(kym koyomi.cc hsmm.cc ylattice.cc)
+add_executable(kym2 koyomi2.cc hsmm2.cc ylattice2.cc)
 #target_compile_options(kym PUBLIC
 target_compile_options(idx PUBLIC
 	$<$<CONFIG:Release>:-O3 -std=c++17>
@@ -30,15 +31,21 @@ target_compile_options(kym PUBLIC
 	$<$<CONFIG:Release>:-O3 -std=c++17>
 	$<$<CONFIG:Debug>:-g -std=c++17>
 	)
+target_compile_options(kym2 PUBLIC
+	$<$<CONFIG:Release>:-O3 -std=c++17>
+	$<$<CONFIG:Debug>:-g -std=c++17>
+	)
 find_package(OpenMP)
 if (OpenMP_CXX_FOUND)
 	target_link_libraries(idx io)
 	target_link_libraries(cps io)
 	target_link_libraries(kym PUBLIC OpenMP::OpenMP_CXX io rd lm)
+	target_link_libraries(kym2 PUBLIC OpenMP::OpenMP_CXX io rd lm)
 	#target_link_libraries(re PUBLIC OpenMP::OpenMP_CXX io rd lm)
 else()
 	target_link_libraries(idx io)
 	target_link_libraries(cps io)
 	target_link_libraries(kym PUBLIC io rd lm)
+	target_link_libraries(kym2 PUBLIC io rd lm)
 	#target_link_libraries(re PUBLIC io rd lm)
 endif()

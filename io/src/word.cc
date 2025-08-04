@@ -29,8 +29,8 @@ int wid::operator[](word& w) {
 }
 
 int wid::index(word& w) {
+	lock_guard<mutex> m(_mutex);
 	if (_index.find(w) == _index.end()) {
-		lock_guard<mutex> m(_mutex);
 		if (!_misn.empty()) {
 			_index[w] = _misn[_misn.size()-1];
 			_misn.pop_back();
@@ -66,17 +66,17 @@ void wid::save(const char *file) {
 	_store(fp);
 	fclose(fp);
 	/*
-	ofstream s(file);
-	boost::archive::text_oarchive oa(s);
-	oa << *this;
-	*/
+	   ofstream s(file);
+	   boost::archive::text_oarchive oa(s);
+	   oa << *this;
+	   */
 }
 
 bool wid::load(const char *file) {
 	FILE *fp = NULL;
 	if ((fp = fopen(file, "rb")) == NULL)
 		return false;
-		//throw "failed to open file stored word indices in wid::load";
+	//throw "failed to open file stored word indices in wid::load";
 	if (fread(&_id, sizeof(int), 1, fp) != 1)
 		throw "failed to read _id in wid::load";
 	int size = 0;
@@ -106,12 +106,12 @@ bool wid::load(const char *file) {
 	fclose(fp);
 	return true;
 	/*
-	if (access(file, F_OK) != -1) {
-		ifstream l(file);
-		boost::archive::text_iarchive ia(l);
-		ia >> *_idx;
-	}
-	*/
+	   if (access(file, F_OK) != -1) {
+	   ifstream l(file);
+	   boost::archive::text_iarchive ia(l);
+	   ia >> *_idx;
+	   }
+	   */
 }
 
 void wid::_store(FILE *fp) {
@@ -172,9 +172,9 @@ word::word(word&& w): head(w.head), len(w.len), id(w.id), pos(w.pos), n(w.n) {
 	_doc = w._doc;
 	m = move(w.m);
 	/*
-	for (auto i = w.m.begin(); i < w.m.end(); ++i)
-		m.push_back(*i);
-		*/
+	   for (auto i = w.m.begin(); i < w.m.end(); ++i)
+	   m.push_back(*i);
+	   */
 	w._doc = NULL;
 	w.head = 0;
 	w.len = 1;
@@ -211,10 +211,10 @@ word& word::operator=(word&& w) noexcept {
 	_doc = w._doc;
 	m = move(w.m);
 	/*
-	m.resize(w.m.size());
-	for (auto i = 0; i < w.m.size(); ++i)
-		m[i] = w.m[i];
-		*/
+	   m.resize(w.m.size());
+	   for (auto i = 0; i < w.m.size(); ++i)
+	   m[i] = w.m[i];
+	   */
 	w._doc = NULL;
 	w.head = 0;
 	w.len = 1;

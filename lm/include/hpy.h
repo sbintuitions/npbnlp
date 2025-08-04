@@ -49,6 +49,8 @@ namespace npbnlp {
 				fwrite(&r.n, sizeof(int), 1, fp);
 				fwrite(&r.table, sizeof(int), 1, fp);
 				fwrite(&r.customer, sizeof(long), 1, fp);
+				fwrite(&r.stop, sizeof(int), 1, fp);
+				fwrite(&r.pass, sizeof(int), 1, fp);
 				int size = r.arrangements->size();
 				fwrite(&size, sizeof(int), 1, fp);
 				for (auto i : *r.arrangements) {
@@ -61,6 +63,8 @@ namespace npbnlp {
 				fread(&r.n, sizeof(int), 1, fp);
 				fread(&r.table, sizeof(int), 1, fp);
 				fread(&r.customer, sizeof(long), 1, fp);
+				fread(&r.stop, sizeof(int), 1, fp);
+				fread(&r.pass, sizeof(int), 1, fp);
 				int size = 0;
 				fread(&size, sizeof(int), 1, fp);
 				for (auto i = 0; i < size; ++i) {
@@ -79,6 +83,8 @@ namespace npbnlp {
 			int n;
 			int table;
 			long customer;
+			int stop;
+			int pass;
 			std::shared_ptr<std::unordered_map<unsigned int, arrangement> > arrangements;
 	};
 	class hpy : public dalm {
@@ -92,15 +98,21 @@ namespace npbnlp {
 			double lp(sentence& s, int i);
 			double lp(word& w);
 			double lp(sentence& s);
+			double lp(std::vector<int>& p, int i);
+			double lp(std::vector<int>& p);
 			void set_base(hpy *b);
 			bool add(word& w);
 			bool remove(word& w);
 			bool add(sentence& s);
 			bool remove(sentence& s);
+			bool add(std::vector<int>& p);
+			bool remove(std::vector<int>& p);
 			void estimate(int iter);
+			void gibbs(int iter);
 			int save(const char *file);
 			int load(const char *file);
 		protected:
+			using base_corpus = std::unordered_map<int, std::vector<word> >;
 			int _n;
 			int _v;
 			hpy *_base;
@@ -108,12 +120,16 @@ namespace npbnlp {
 			std::shared_ptr<std::vector<double> > _strength;
 			//std::shared_ptr<sda<arrangement> > _nc;
 			std::shared_ptr<sda<restaurant> > _nz;
+			std::shared_ptr<base_corpus> _bc;
 			bool _add(word& w, int i, int n);
 			bool _remove(word& w, int i, int n);
 			bool _add(sentence& s, int i, int n);
 			bool _remove(sentence& s, int i, int n);
+			bool _add(std::vector<int>& p, int i, int n);
+			bool _remove(std::vector<int>& p, int i, int n);
 			double _lp(sentence& s, int i, int n);
 			double _lp(word& w, int i, int n);
+			double _lp(std::vector<int>& p, int i, int n);
 			void _estimate_d(std::vector<double>& a, std::vector<double>& b);
 			void _estimate_t(std::vector<double>& a, std::vector<double>& b);
 	};

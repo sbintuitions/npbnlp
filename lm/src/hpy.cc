@@ -33,10 +33,10 @@ arrangement& arrangement::operator=(const arrangement& a) {
 arrangement::~arrangement() {
 }
 
-restaurant::restaurant():n(0),table(0),customer(0),arrangements(new unordered_map<unsigned int, arrangement>) {
+restaurant::restaurant():n(0),table(0),customer(0),stop(0),pass(0),arrangements(new unordered_map<unsigned int, arrangement>) {
 }
 
-restaurant::restaurant(int n):n(n),table(0),customer(0),arrangements(new unordered_map<unsigned int, arrangement>) {
+restaurant::restaurant(int n):n(n),table(0),customer(0),stop(0),pass(0),arrangements(new unordered_map<unsigned int, arrangement>) {
 }
 
 restaurant::restaurant(const restaurant& r) {
@@ -44,6 +44,8 @@ restaurant::restaurant(const restaurant& r) {
 	table = r.table;
 	customer = r.customer;
 	arrangements = r.arrangements;
+	stop = r.stop;
+	pass = r.pass;
 }
 
 restaurant& restaurant::operator=(const restaurant& r) {
@@ -51,16 +53,18 @@ restaurant& restaurant::operator=(const restaurant& r) {
 	table = r.table;
 	customer = r.customer;
 	arrangements = r.arrangements;
+	stop = r.stop;
+	pass = r.pass;
 	return *this;
 }
 
 restaurant::~restaurant() {
 }
 
-hpy::hpy():_n(1),_v(1),_base(NULL),_discount(new vector<double>(_n, DISCOUNT)), _strength(new vector<double>(_n, STRENGTH)), /*_nc(new sda<arrangement>(3)),*/ _nz(new sda<restaurant>(3)) {
+hpy::hpy():_n(1),_v(1),_base(NULL),_discount(new vector<double>(_n, DISCOUNT)), _strength(new vector<double>(_n, STRENGTH)), _nz(new sda<restaurant>(3)), _bc(nullptr) {
 }
 
-hpy::hpy(int n):_n(n),_v(1),_base(NULL),_discount(new vector<double>(_n, DISCOUNT)), _strength(new vector<double>(_n, STRENGTH)), /*_nc(new sda<arrangement>(3)), */_nz(new sda<restaurant>(3)) {
+hpy::hpy(int n):_n(n),_v(1),_base(NULL),_discount(new vector<double>(_n, DISCOUNT)), _strength(new vector<double>(_n, STRENGTH)), _nz(new sda<restaurant>(3)), _bc(nullptr) {
 }
 
 hpy::hpy(const hpy& lm) {
@@ -101,7 +105,20 @@ bool hpy::add(word& w) {
 
 bool hpy::add(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
-		_add(s, i, _n);
+		if (_add(s, i, _n) && _base) {
+			if (_bc == nullptr)
+				_bc = shared_ptr<base_corpus>(new base_corpus);
+			word w = s.wd(i);
+			_base->add(w);
+			(*_bc)[w.id].emplace_back(w);
+		}
+	}
+	return true;
+}
+
+bool hpy::add(vector<int>& k) {
+	for (auto i = 0; i <= k.size(); ++i) {
+		_add(k, i, _n);
 	}
 	return true;
 }
@@ -115,7 +132,25 @@ bool hpy::remove(word& w) {
 
 bool hpy::remove(sentence& s) {
 	for (auto i = 0; i <= s.size(); ++i) {
-		_remove(s, i, _n);
+		if (_remove(s, i, _n) && _base) {
+			int size = (*_bc)[s[i]].size();
+			int id = (*generator::create())()()%size;
+			word& b = (*_bc)[s[i]][id];
+			_base->remove(b);
+			(*_bc)[s[i]].erase((*_bc)[s[i]].begin()+id);
+			(*_bc)[s[i]].shrink_to_fit();
+			if ((*_bc)[s[i]].empty())
+				_bc->erase(s[i]);
+		}
+	}
+	if (_bc && _bc->empty())
+		_bc = nullptr;
+	return true;
+}
+
+bool hpy::remove(vector<int>& k) {
+	for (auto i = 0; i <= k.size(); ++i) {
+		_remove(k, i, _n);
 	}
 	return true;
 }
@@ -165,7 +200,7 @@ bool hpy::_add(sentence& s, int i, int n) {
 	} else {
 		(*arr.table)[id]++;
 	}
-	return true;
+	return false;
 }
 
 bool hpy::_add(word& w, int i, int n) {
@@ -213,7 +248,56 @@ bool hpy::_add(word& w, int i, int n) {
 	} else {
 		(*arr.table)[id]++;
 	}
-	return true;
+	return false;
+}
+
+bool hpy::_add(vector<int>& k, int i, int n) {
+	if (n == 0)
+		return true;
+	double lpr = _lp(k, i, n-1);
+	/*
+	   auto c = _nc->rexactmatch(w, i, n);
+	   if (c < 0) {
+	   _nc->insert(w, i, n);
+	   c = _nc->rexactmatch(w, i, n);
+	   }
+	   */
+	auto z = _nz->rexactmatch(k, i-1, n-1);
+	if (z < 0) {
+		_nz->insert(k, i-1, n-1);
+		z = _nz->rexactmatch(k, i-1, n-1);
+	}
+
+	auto key = (i >= 0 && i < k.size())? k[i]:0;
+	auto& rst = _nz->val(z); rst.n = n-1;
+	auto it = rst.arrangements->find(key);
+	if (it == rst.arrangements->end()) {
+		(*rst.arrangements)[key] = arrangement(n);
+	}
+	//auto& arr = _nc->val(c); arr.n = n;
+	auto& arr = (*rst.arrangements)[key];
+	++rst.customer;
+	++arr.customer;
+	int size = arr.table->size();
+	vector<double> t(size+1,0);
+	double r = 0;
+	for (auto j = 0; j < size; ++j) {
+		t[j] = (*arr.table)[j] - (*_discount)[rst.n];
+		r += t[j];
+	}
+	t[size] = ((*_strength)[rst.n] + rst.table * (*_discount)[rst.n]) * exp(lpr);
+	r += t[size];
+	int id = rd::draw(r, t);
+	if (id == size) {
+		arr.table->emplace_back(1);
+		++rst.table;
+		if (n == 1 && id == 0)
+			++_v;
+		return _add(k, i, n-1);
+	} else {
+		(*arr.table)[id]++;
+	}
+	return false;
 }
 
 bool hpy::_remove(sentence& s, int i, int n) {
@@ -239,6 +323,7 @@ bool hpy::_remove(sentence& s, int i, int n) {
 	if ((*arr.table)[id] == 0) {
 		--rst.table;
 		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
 		if (arr.customer == 0) {
 			rst.arrangements->erase(s[i]);
 			//_nc->erase(s, i, n);
@@ -250,7 +335,7 @@ bool hpy::_remove(sentence& s, int i, int n) {
 		}
 		return _remove(s, i, n-1);
 	}
-	return true;
+	return false;
 }
 
 bool hpy::_remove(word& w, int i, int n) {
@@ -276,6 +361,7 @@ bool hpy::_remove(word& w, int i, int n) {
 	if ((*arr.table)[id] == 0) {
 		--rst.table;
 		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
 		if (arr.customer == 0) {
 			rst.arrangements->erase(w[i]);
 			//_nc->erase(w, i, n);
@@ -286,7 +372,61 @@ bool hpy::_remove(word& w, int i, int n) {
 			_nz->erase(w, i-1, n-1);
 		return _remove(w, i, n-1);
 	}
-	return true;
+	return false;
+}
+
+bool hpy::_remove(vector<int>& k, int i, int n) {
+	if (n == 0)
+		return true;
+	//auto c = _nc->rexactmatch(w, i, n);
+	auto z = _nz->rexactmatch(k, i-1, n-1);
+	auto& rst = _nz->val(z);
+	//auto& arr = _nc->val(c);
+	auto key = (i >= 0 && i < k.size())? k[i]:0;
+	auto& arr = (*rst.arrangements)[key];
+	--rst.customer;
+	--arr.customer;
+	double r = 0;
+	int size = arr.table->size();
+	vector<double> t(size, 0);
+	for (auto j = 0; j < size; ++j) {
+		t[j] = (*arr.table)[j];
+		r += t[j];
+		//r += (*arr.table)[j];
+	}
+	int id = rd::draw(r, t);
+	(*arr.table)[id]--;
+	if ((*arr.table)[id] == 0) {
+		--rst.table;
+		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
+		if (arr.customer == 0) {
+			rst.arrangements->erase(key);
+			//_nc->erase(w, i, n);
+			if (n == 1)
+				--_v;
+		}
+		if (rst.customer == 0)
+			_nz->erase(k, i-1, n-1);
+		return _remove(k, i, n-1);
+	}
+	return false;
+}
+
+void hpy::gibbs(int iter) {
+	if (!_base || _bc == nullptr)
+		return;
+	for (auto i = 0; i < iter; ++i) {
+		for (auto& j : *_bc) {
+			int size = j.second.size();
+			int rd[size] = {0};
+			rd::shuffle(rd, size);
+			for (auto k = 0; k < size; ++k) {
+				_base->remove(j.second[k]);
+				_base->add(j.second[k]);
+			}
+		}
+	}
 }
 
 void hpy::estimate(int iter) {
@@ -375,12 +515,24 @@ double hpy::lp(word& w) {
 	return lpr;
 }
 
+double hpy::lp(vector<int>& k) {
+	double lpr = 0;
+	for (auto i = 0; i <= k.size(); ++i) {
+		lpr += lp(k, i);
+	}
+	return lpr;
+}
+
 double hpy::lp(sentence& s, int i) {
 	return _lp(s, i, _n);
 }
 
 double hpy::lp(word& w, int i) {
 	return _lp(w, i, _n);
+}
+
+double hpy::lp(vector<int>& k, int i) {
+	return _lp(k, i, _n);
 }
 
 int hpy::save(const char *file) {
@@ -423,7 +575,9 @@ int hpy::load(const char *file) {
 
 double hpy::_lp(sentence& s, int i, int n) {
 	double lp = -log(_v); // base measure
-	if (n == 0)
+	if (n == 0 && _base) 
+		return _base->lp(s.wd(i));
+	else if (n == 0)
 		return lp;
 	//auto c = _nc->cs_search(s, i, n);
 	auto z = _nz->cs_search(s, i-1, n-1);
@@ -462,6 +616,33 @@ double hpy::_lp(word& w, int i, int n) {
 		double d = (*_strength)[j]+cu;
 		lp += log(b) - log(d);
 		auto it = r.arrangements->find(w[i]);
+		if (it != r.arrangements->end()) {
+			auto& a = it->second;
+			//auto a = _nc->getval(c[j].second);
+			double tuk = a.table->size();
+			double cuk = a.customer;
+			double p = cuk-(*_discount)[j]*tuk;
+			lp = math::lse(lp, log(p)-log(d));
+		}
+	}
+	return lp;
+}
+
+double hpy::_lp(vector<int>& k, int i, int n) {
+	double lp = -log(_v); // base measure
+	if (n == 0)
+		return lp;
+	auto z = _nz->cs_search(k, i-1, n-1);
+	auto key = (i >= 0 && i < k.size())? k[i]:0;
+	for (auto j = 0; j < z.size(); ++j) {
+		auto& r = _nz->val(z[j].second);
+		//auto r = _nz->getval(z[j-1].second);
+		double tu = r.table;
+		double cu = r.customer;
+		double b = (*_strength)[j]+(*_discount)[j]*tu;
+		double d = (*_strength)[j]+cu;
+		lp += log(b) - log(d);
+		auto it = r.arrangements->find(key);
 		if (it != r.arrangements->end()) {
 			auto& a = it->second;
 			//auto a = _nc->getval(c[j].second);

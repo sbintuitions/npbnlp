@@ -3,7 +3,7 @@
 #include<cstdlib>
 #include"util.h"
 #include"rd.h"
-#include"hsmm.h"
+#include"hsmm2.h"
 #ifdef _OPENMP
 #include<omp.h>
 #endif
@@ -17,6 +17,7 @@ using namespace npbnlp;
 
 static int n = 10;
 static int m = 3;
+static int k = 50;
 static int threads = 4;
 static int epoch = 100;
 static int dmp = 0;
@@ -164,6 +165,7 @@ void dump(vector<pair<word, vector<unsigned int> > >& s) {
 			io::i2c(w[j], buf);
 			cout << buf;
 		}
+		//cout << "/" << w.pos << "/";
 		cout << "/";
 		for (auto& j : i.second) {
 			char buf[5] = {0};
@@ -198,6 +200,8 @@ int pretrain(hsmm& lm, io& f) {
 			p = util::find(s, *f.raw, p+1, f.head[i+1]);
 		} while (p < f.head[i+1]);
 	}
+	lm.pretrain(epoch, corpus);
+	/*
 	for (auto i = 0; i < epoch; ++i) {
 		vector<int> *rd = new vector<int>(corpus.size(), 0);
 		//int rd[size] = {0};
@@ -213,6 +217,7 @@ int pretrain(hsmm& lm, io& f) {
 		lm.estimate(1);
 		lm.poisson_correction(1000);
 	}
+	*/
 	return 0;
 }
 
@@ -222,7 +227,7 @@ int mcmc() {
 	//vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
 	//vector<vector<pair<word, vector<unsigned int> > > > corpus(size);
 	vector<vector<pair<word, vector<unsigned int> > > > corpus;
-	hsmm lm(n, m, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
+	hsmm lm(n, m, k, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
 	//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
 	lm.set(vocab);
 	io *g = NULL;
@@ -230,8 +235,9 @@ int mcmc() {
 		g = new io(supervised.c_str());
 		pretrain(lm, *g);
 	}
-	lm.init(f, corpus);
-	lm.estimate(1);
+	//lm.init(f, corpus);
+	//lm.estimate(1);
+	corpus.resize(size);
 #ifdef _OPENMP
 	threads = min(omp_get_max_threads(), threads);
 	omp_set_num_threads(threads);
@@ -243,12 +249,13 @@ int mcmc() {
 		rd::shuffle(rd->data(), size);
 		int j = 0;
 		while (j < size) {
-			for (auto t = 0; t < threads; ++t) {
-				if (j+t < (int)size) {
-					//lm.remove(corpus[rd[j+t]]);
-					lm.remove(corpus[(*rd)[j+t]]);
+			if (i > 0)
+				for (auto t = 0; t < threads; ++t) {
+					if (j+t < (int)size) {
+						//lm.remove(corpus[rd[j+t]]);
+						lm.remove(corpus[(*rd)[j+t]]);
+					}
 				}
-			}
 #ifdef _OPENMP
 #pragma omp parallel
 			{
@@ -304,23 +311,27 @@ int mcmc() {
 }
 
 int parse() {
-	io f(test.c_str());
-	shared_ptr<wid> d = wid::create();
-	d->load(wdic.c_str());
-	//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
-	hsmm lm(n, m, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
-	lm.load(model.c_str());
+	try {
+		io f(test.c_str());
+		shared_ptr<wid> d = wid::create();
+		d->load(wdic.c_str());
+		//hsmm lm(n, m, triedic.c_str(), (unkdic.empty()? NULL: unkdic.c_str()));
+		hsmm lm(n, m, k, triedic.c_str(), (unitdic.empty()?NULL:unitdic.c_str()));
+		lm.load(model.c_str());
 #ifdef _OPENMP
-	threads = min(omp_get_max_threads(), threads);
-	omp_set_num_threads(threads);
+		threads = min(omp_get_max_threads(), threads);
+		omp_set_num_threads(threads);
 #pragma omp parallel for ordered schedule(dynamic)
 #endif
-	for (auto i = 0; i < (int)f.head.size()-1; ++i) {
-		vector<pair<word, vector<unsigned int> > > s = lm.parse(f, i);
+		for (auto i = 0; i < (int)f.head.size()-1; ++i) {
+			vector<pair<word, vector<unsigned int> > > s = lm.parse(f, i);
 #ifdef _OPENMP
 #pragma omp ordered
 #endif
-		dump(s);
+			dump(s);
+		}
+	} catch (const char *ex) {
+		throw ex;
 	}
 
 	return 0;

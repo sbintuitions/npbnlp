@@ -383,14 +383,54 @@ namespace npbnlp {
 					}
 				}
 
+				/*
+				long _xcheck(std::vector<long>& sibling, long b) {
+					auto h = _tail;
+					long m = 0;
+					while (1) {
+						m = h - sibling[0];
+						h = -_base[h];
+						if (m < 0) {
+							if (h == _head) {
+								_extend();
+								h = _tail;
+							}
+							continue;
+						}
+						bool accept = true;
+						for (auto& s: sibling) {
+							if (!_check_acceptable(s, b, m)) {
+								accept = false;
+								break;
+							}
+						}
+						if (!accept) {
+							if (h == _head) {
+								_extend();
+								h = _tail;
+							}
+							continue;
+						}
+						break;
+					}
+					return m;
+				}
+				*/
+
 				long _xcheck(std::vector<long>& sibling, long b) {
 					auto h = _head;
 					long m = 0;
 					while (1) {
 						m = h - sibling[0];
+						auto c = h;
 						h = -_check[h];
-						if (m < 0)
+						if (m < 0) {
+							if (c == _tail) {
+								_extend();
+								h = _head;
+							}
 							continue;
+						}
 						bool accept = true;
 						for (auto& s : sibling) {
 							if (!_check_acceptable(s, b, m)) {
@@ -399,8 +439,10 @@ namespace npbnlp {
 							}
 						}
 						if (!accept) {
-							if (h == _tail)
+							if (h == _tail) {
 								_extend();
+								h = _head;
+							}
 							continue;
 						}
 						break;
@@ -408,14 +450,20 @@ namespace npbnlp {
 					return m;
 				}
 
+				/*
 				long _xcheck(node<T>& subtree, long b) {
-					auto h = _head;
+					auto h = _tail;
 					long m = 0;
 					while (1) {
 						m = h - _c[subtree.sibling[0].id];
-						h = -_check[h];
-						if (m < 0)
+						h = -_base[h];
+						if (m < 0) {
+							if (h == _head) {
+								_extend();
+								h = _tail;
+							}
 							continue;
+						}
 						bool accept = true;
 						for (auto& s : subtree.sibling) {
 							if (!_check_acceptable(s, b, m)) {
@@ -424,8 +472,44 @@ namespace npbnlp {
 							}
 						}
 						if (!accept) {
-							if (h == _tail)
+							if (h == _head) {
 								_extend();
+								h = _tail;
+							}
+							continue;
+						}
+						break;
+					}
+					return m;
+				}
+				*/
+
+				long _xcheck(node<T>& subtree, long b) {
+					auto h = _head;
+					long m = 0;
+					while (1) {
+						m = h - _c[subtree.sibling[0].id];
+						auto c = h;
+						h = -_check[h];
+						if (m < 0) {
+							if (c == _tail) {
+								_extend();
+								h = _head;
+							}
+							continue;
+						}
+						bool accept = true;
+						for (auto& s : subtree.sibling) {
+							if (!_check_acceptable(s, b, m)) {
+								accept = false;
+								break;
+							}
+						}
+						if (!accept) {
+							if (h == _tail) {
+								_extend();
+								h = _head;
+							}
 							continue;
 						}
 						break;
@@ -486,14 +570,17 @@ namespace npbnlp {
 					}
 					auto prev = -_base[b];
 					auto next = -_check[b];
-					_base[next] = _base[b];
-					_check[prev] = _check[b];
 					if (b == _head) {
 						_head = next;
+						_base[_head] = -prev;
 						//_base[_head] = -prev;
 					} else if (b == _tail) {
 						_tail = prev;
+						_check[_tail] = -next;
 						//_check[_tail] = -next;
+					} else {
+						_base[next] = _base[b];
+						_check[prev] = _check[b];
 					}
 					_base[b] = 0;
 					_check[b] = 0;
@@ -523,28 +610,41 @@ namespace npbnlp {
 					_check.resize(2*_check.size());
 					std::iota(_base.rbegin(), _base.rend()-offset,-_base.size()+2);
 					std::iota(_check.rbegin(), _check.rend()-offset,-_check.size());
+					// link unoccupied list to tail node
 					/*
-					   _base[offset] = -_tail;
-					   _tail = _check.size()-1;
-					   _base[_head] = -_base.size();
-					   */
+					_base[offset] = -_tail;
+					_check[_tail] = -offset;
+					_tail = _check.size()-1;
+					_listsize += offset;
+					*/
+
+					// link unoccupied list to head node
 					auto h = _head;
 					auto t = _tail;
-					_base[h] = -_check.size()+1;
-					_check[t] = -_base.size();
-					_check[_check.size()-1] = -h;
 					_head = offset;
 					_base[_head] = -_base.size();
+					_base[h] = -_check.size()+1;
+					_check[_check.size()-1] = -h;
+					_check[_tail] = -_check.size();
 					_listsize += offset;
 				}
 
 				bool _is_empty(long i) {
+					if (i >= (long)_base.size())
+						return false;
+					return (_base[i] < 0 && _check[i] < 0);
+				}
+				/*
+				bool _is_empty(long i) {
+					//if (i >= (long)_base.size())
+					//	return false;
 					while (i >= (long)_base.size()) {
 						_extend();
 					}
 
 					return (_base[i] < 0 && _check[i] < 0);
 				}
+				*/
 
 				void _modify_check(long f, long t) {
 					// leaf node

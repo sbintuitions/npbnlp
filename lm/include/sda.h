@@ -96,6 +96,25 @@ namespace npbnlp {
 						r.emplace_back(std::make_pair(len,-da<unsigned int,V>::_base[c]));
 					return r;
 				}
+				rst cs_search(std::vector<int>& k, int i, int n) {
+					rst r;
+					long b = 0;
+					int len = 0;
+					for (auto j = i; j > i-n; --j) {
+						long c = da<unsigned int,V>::_base[b] + 1;
+						if (da<unsigned int,V>::_check[c] == b && da<unsigned int,V>::_base[c] < 0) 
+							r.emplace_back(std::make_pair(len, -da<unsigned int,V>::_base[c]));
+						int key = (j >= 0)? k[j]: 0; 
+						b = da<unsigned int,V>::_traverse(b, key);
+						++len;
+						if (b < 0)
+							return r;
+					}
+					long c = da<unsigned int,V>::_base[b] + 1;
+					if (da<unsigned int,V>::_check[c] == b && da<unsigned int,V>::_base[c] < 0)
+						r.emplace_back(std::make_pair(len,-da<unsigned int,V>::_base[c]));
+					return r;
+				}
 				long rexactmatch(sentence& s, int i, int n) {
 					long b = 0;
 					for (auto j = i; j > i-n; --j) {
@@ -112,6 +131,19 @@ namespace npbnlp {
 					long b = 0;
 					for (auto j = i; j > i-n; --j) {
 						b = da<unsigned int,V>::_traverse(b, w[j]);
+						if (b < 0)
+							return -1;
+					}
+					b = da<unsigned int,V>::_traverse(b, _terminal);
+					if (b >= 0 && da<unsigned int,V>::_base[b] < 0)
+						return -da<unsigned int,V>::_base[b];
+					return -1;
+				}
+				long rexactmatch(std::vector<int>& k, int i, int n) {
+					long b = 0;
+					for (auto j = i; j > i-n; --j) {
+						int key = (j >= 0)? k[j]: 0; 
+						b = da<unsigned int,V>::_traverse(b, key);
 						if (b < 0)
 							return -1;
 					}
@@ -149,6 +181,14 @@ namespace npbnlp {
 					//if (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
 					while (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
 						//da<unsigned int,V>::_value.resize(da<unsigned int,V>::_nid, V(n));
+						da<unsigned int,V>::_value.emplace_back(V(n));
+					}
+				}
+				void insert(std::vector<int>& k, int i, int n) {
+					node<unsigned int> tree;
+					make_subtree(tree, k, i, n);
+					insert_subtree(tree, 0);
+					while (da<unsigned int,V>::_value.size() < da<unsigned int,V>::_nid) {
 						da<unsigned int,V>::_value.emplace_back(V(n));
 					}
 				}
@@ -204,6 +244,33 @@ namespace npbnlp {
 						}
 					}
 				}
+				void erase(std::vector<int>& k, int i, int n) {
+					long b = 0;
+					for (auto j = i; j > i-n; --j) {
+						int key = (j >= 0)? k[j]: 0; 
+						b = da<unsigned int,V>::_traverse(b, key);
+						if (b < 0)
+							return;
+					}
+					b = da<unsigned int,V>::_traverse(b, _terminal);
+					if (b >= 0 && da<unsigned int,V>::_base[b] < 0 && da<unsigned int,V>::_check[b] >= 0) {
+						da<unsigned int,V>::_erased.emplace_back(-da<unsigned int,V>::_base[b]);
+						da<unsigned int,V>::_value[-da<unsigned int,V>::_base[b]] = V(-1);
+						auto p = da<unsigned int,V>::_check[b];
+						da<unsigned int,V>::_link(b);
+						while (p > 0) {
+							std::vector<long> sib;
+							da<unsigned int,V>::_get_sibling(p, sib);
+							if (sib.empty()) {
+								auto n = da<unsigned int,V>::_check[p];
+								da<unsigned int,V>::_link(p);
+								p = n;
+							} else {
+								break;
+							}
+						}
+					}
+				}
 				void insert_subtree(node<unsigned int>& t, long b) {
 					for (auto& s : t.sibling) {
 						if (da<unsigned int,V>::_add(b, s.id)) {
@@ -235,6 +302,20 @@ namespace npbnlp {
 					p->sibling.emplace_back(terminal);
 					for (auto j = i; j > i-n; --j) {
 						node<unsigned int> n(w[j]); n.parent = p;
+						p->sibling.emplace_back(n);
+						auto next = p->sibling.size()-1;
+						node<unsigned int> m(_terminal); m.parent= &p->sibling[next];
+						p->sibling[next].sibling.emplace_back(m);
+						p = &p->sibling[next];
+					}
+				}
+				void make_subtree(node<unsigned int>& t, std::vector<int>& k, int i, int n) {
+					node<unsigned int> *p = &t;
+					node<unsigned int> terminal(_terminal); terminal.parent = p;
+					p->sibling.emplace_back(terminal);
+					for (auto j = i; j > i-n; --j) {
+						int key = (j >= 0)? k[j]: 0; 
+						node<unsigned int> n(key); n.parent = p;
 						p->sibling.emplace_back(n);
 						auto next = p->sibling.size()-1;
 						node<unsigned int> m(_terminal); m.parent= &p->sibling[next];

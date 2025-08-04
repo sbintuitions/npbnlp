@@ -201,3 +201,47 @@ unsupervised learning libraries for NLP
 % ./pa/src/pa --train sample --model ipcfg.model --dic grammar.dic
 % ./pa/src/pa --parse sample --model ipcfg.model --dic grammar.dic
 ```
+
+### sentence boundary detection
+```
+./sb/src/usbd
+[Usage]./sb/src/usbd [options]
+[example]
+./sb/src/usbd --train file --model file_to_save
+./sb/src/usbd --parse file --model trained_model_file
+[options]
+--validation =file(use as validation dataset in training
+--pretrain =file(use as pretraining dataset in training
+--sequence_type token_type(letter or word, default:letter)
+--smoothing lm_type(kn or hpy, default:hpy)
+--dic =file(word_dic to use option --sequence_type word default:usbd.dic)
+--epoch =int(default:100)
+--threads =int(default:4)
+--punc =string(default:。！？)
+--default_prior =float(default prior, default:0.1)
+--cr_prior =float(cr prior, default:0.9)
+--punc_prior =float(punc prior, default:0.9)
+-n =int n-gram order(default 5)
+-a hyperparameter for bernoulli distribution for general prior(default 1)
+-b hyperparameter for bernoulli distribution for general prior(default 1)
+-c hyperparameter for bernoulli distribution for cr prior(default 9)
+-d hyperparameter for bernoulli distribution for cr prior(default 1)
+-e hyperparameter for bernoulli distribution for punc prior(default 9)
+-f hyperparameter for bernoulli distribution for punc prior(default 1)
+```
+
+### reading estimation
+```
+./re/src/kym
+[Usage]./re/src/kym [options]
+[example]
+./re/src/kym --train file --model file_to_save --dic word_dic --trie phonetic_dic
+./re/src/kym --parse file --model modelfile --dic word_dic --trie phonetic_dic
+[options]
+-n, --letter_order=int(default 10)
+-m, --phonetic_order=int(default 3)
+-e, --epoch=int(default 100)
+-t, --threads=int(default 4)
+-v, --vocab=int(means letter variations. default 5000)
+-s, --supervised=file(labeled_data in kkci format)
+```

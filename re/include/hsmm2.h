@@ -1,15 +1,49 @@
-#ifndef NPBNLP_HSMM_H
-#define NPBNLP_HSMM_H
+#ifndef NPBNLP_HSMM2_H
+#define NPBNLP_HSMM2_H
 
 #include"io.h"
 #include"da2.h"
-#include"ylattice.h"
+#include"ylattice2.h"
 #include"vtable.h"
 #include"hpyp.h"
 #include"vpyp.h"
 #include<memory>
 
 namespace npbnlp {
+	class hmm {
+		class lattice {
+			public:
+				lattice(int k, std::vector<std::pair<word, std::vector<unsigned int> > >& s, std::vector<std::shared_ptr<hpyp> >& word, std::vector<std::shared_ptr<hpyp> >& phonetic, hpyp& pos);
+				virtual ~lattice();
+				word* wp(int i);
+				std::vector<unsigned int>* rp(int i);
+				int size(int i);
+				std::vector<int>::iterator begin(int i);
+				std::vector<int>::iterator end(int i);
+				std::vector<std::vector<int> > k;
+			protected:
+				std::vector<std::pair<word, std::vector<unsigned int> > > *_sequence;
+				double lpr(word& w, std::vector<unsigned int>& r, hpyp& wd, hpyp& phn);
+
+
+		};
+		public:
+			hmm(int n, int m, int k);
+			virtual ~hmm();
+			void sample(std::vector<std::pair<word, std::vector<unsigned int> > >& s);
+			void add(std::vector<std::pair<word, std::vector<unsigned int> > >& s);
+			void remove(std::vector<std::pair<word, std::vector<unsigned int> > >& s);
+		protected:
+			int _n;
+			int _m;
+			int _k;
+			std::shared_ptr<std::vector<std::shared_ptr<hpyp> > > _word;
+			std::shared_ptr<std::vector<std::shared_ptr<vpyp> > > _letter;
+			std::shared_ptr<std::vector<std::shared_ptr<hpyp> > > _phonetic;
+			std::shared_ptr<hpyp> _pos;
+			friend class hsmm;
+	};
+
 	class hsmm {
 		public:
 			static void uint_writer(unsigned int& c, FILE *fp) {
@@ -39,11 +73,12 @@ namespace npbnlp {
 				}
 			}
 			hsmm(const char *dic, const char *unit = NULL);
-			hsmm(int n, int m, const char *dic, const char *unit = NULL);
+			hsmm(int n, int m, int k, const char *dic, const char *unit = NULL);
 			virtual ~hsmm();
 			virtual void add(std::vector<std::pair<word, std::vector<unsigned int> > >& seq);
 			virtual void remove(std::vector<std::pair<word, std::vector<unsigned int> > >& seq);
 			virtual void init(io& f, std::vector<std::vector<std::pair<word, std::vector<unsigned int> > > >& corpus);
+			virtual void pretrain(int iter, std::vector<std::vector<std::pair<word, std::vector<unsigned int> > > >& corpus);
 			virtual std::vector<std::pair<word, std::vector<unsigned int> > > sample(io& f, int i);
 			virtual std::vector<std::pair<word, std::vector<unsigned int> > > parse(io& f, int i);
 			virtual void set(int v);
@@ -58,13 +93,17 @@ namespace npbnlp {
 			int _n;
 			int _m;
 			int _v;
-			std::shared_ptr<hpyp> _word;
-			std::shared_ptr<vpyp> _letter;
-			std::shared_ptr<hpyp> _phonetic;
+			int _k;
+			std::shared_ptr<std::vector<std::shared_ptr<hpyp> > > _word;
+			std::shared_ptr<std::vector<std::shared_ptr<vpyp> > > _letter;
+			std::shared_ptr<std::vector<std::shared_ptr<hpyp> > > _phonetic;
+			std::shared_ptr<hpyp> _pos;
 			std::shared_ptr<trie> _dic;
 			std::shared_ptr<trie> _unit;
-			void _precalc(ynode& n);
-			double _transition(ynode& prev, ynode& cur);
+			double _emission(ynode& n, int k);
+			double _transition(int p, int s);
+			//void _precalc(ynode& n);
+			//double _transition(ynode& prev, ynode& cur);
 	};
 }
 

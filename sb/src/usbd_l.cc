@@ -4,7 +4,7 @@
 #include"beta.h"
 #include"rd.h"
 #include<random>
-#define BUFSIZE 1024
+#define BUFSIZE 256
 
 using namespace std;
 using namespace npbnlp;
@@ -347,7 +347,7 @@ void usbd_l::parse(io& d, vector<int>& b) {
 			} else {
 				if (!b.empty())
 					b.pop_back();
-				for (auto k = 1; (int)c.size(); ++k) {
+				for (auto k = 1; k < (int)c.size(); ++k) {
 					b.emplace_back(c[k]);
 				}
 			}

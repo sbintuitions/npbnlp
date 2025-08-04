@@ -9,18 +9,26 @@
 using namespace std;
 using namespace npbnlp;
 
-hsmm::hsmm(const char *dic):_n(10),_m(3),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)) {
+hsmm::hsmm(const char *dic, const char *unit):_n(10),_m(3),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)),_unit(nullptr) {
 	_dic->load(dic, hsmm::vv_reader, hsmm::uint_reader);
 	_letter->set_v(C);
 	_phonetic->set_v(P);
 	_word->set_base(_letter.get());
+	if (unit) {
+		_unit = shared_ptr<trie>(new trie(3));
+		_unit->load(unit, hsmm::vv_reader, hsmm::uint_reader);
+	}
 }
 
-hsmm::hsmm(int n, int m, const char *dic):_n(n),_m(m),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)) {
+hsmm::hsmm(int n, int m, const char *dic, const char *unit):_n(n),_m(m),_word(new hpyp(1)),_letter(new vpyp(_n)),_phonetic(new hpyp(_m)),_dic(new trie(3)),_unit(nullptr) {
 	_dic->load(dic, hsmm::vv_reader, hsmm::uint_reader);
 	_letter->set_v(C);
 	_phonetic->set_v(P);
 	_word->set_base(_letter.get());
+	if (unit) {
+		_unit = shared_ptr<trie>(new trie(3));
+		_unit->load(unit, hsmm::vv_reader, hsmm::uint_reader);
+	}
 }
 
 hsmm::~hsmm() {
@@ -51,16 +59,26 @@ void hsmm::poisson_correction(int n) {
 }
 
 void hsmm::add(vector<pair<word, vector<unsigned int> > >& s) {
+	shared_ptr<wid> dic = wid::create();
 	int rd[s.size()] = {0};
 	rd::shuffle(rd, s.size());
 	for (auto i = 0; i < (int)s.size(); ++i) {
 		word& w = s[rd[i]].first;
+		w.id = dic->index(w);
 		_word->add(w, _word->h());
 	}
 	vector<unsigned int> p;
 	for (auto& x : s) {
 		for (auto& i : x.second) {
 			p.emplace_back(i);
+		}
+		for (auto i = 0; i < (int)x.second.size(); ++i) {
+			context *c = _phonetic->h();
+			for (auto j = i-1; j > i-_m; --j) {
+				int k = (j >= 0)? x.second[j] : 0;
+				c = c->make(k);
+			}
+			_phonetic->add(x.second[i], c);
 		}
 		/*
 		// bos of reading for word unigram
@@ -99,6 +117,14 @@ void hsmm::remove(vector<pair<word, vector<unsigned int> > >& s) {
 	for (auto& x : s) {
 		for (auto& i : x.second) {
 			p.emplace_back(i);
+		}
+		for (auto i = 0; i < (int)x.second.size(); ++i) {
+			context *c = _phonetic->h();
+			for (auto j = i-1; j > i-_m; --j) {
+				int k = (j >= 0)? x.second[j] : 0;
+				c = c->find(k);
+			}
+			_phonetic->remove(x.second[i], c);
 		}
 		/*
 		// bos of reading for word unigram
@@ -169,10 +195,28 @@ void hsmm::load(const char *file) {
 }
 
 void hsmm::init(io& f, vector<vector<pair<word, vector<unsigned int> > > >& c) {
+	int n = f.head.size()-1;
+	shared_ptr<generator> r = generator::create();
+	for (auto i = 0; i < n; ++i) {
+		ylattice l(f, i, *_dic, _unit.get());
+		vector<pair<word, vector<unsigned int> > > s;
+		ynode *node = l.getp(l.size(), 0);
+		s.emplace_back(make_pair(node->w, node->phonetic));
+		auto t = (int)l.size()-node->w.len;
+		while (t >= 0) {
+			int j = (*r)()()%(l.size(t));
+			node = l.getp(t, j);
+			s.push_back(make_pair(node->w, node->phonetic));
+			t -= node->w.len;
+		}
+		reverse(s.begin(), s.end());
+		add(s);
+		c.emplace_back(s);
+	}
 }
 
 vector<pair<word, vector<unsigned int> > > hsmm::sample(io& f, int i) {
-	ylattice l(f, i, *_dic);
+	ylattice l(f, i, *_dic, _unit.get());
 	vt dp;
 	for (auto t = 0; t < (int)l.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
@@ -207,13 +251,14 @@ vector<pair<word, vector<unsigned int> > > hsmm::sample(io& f, int i) {
 }
 
 vector<pair<word, vector<unsigned int> > > hsmm::parse(io& f, int i) {
-	ylattice l(f, i, *_dic);
+	ylattice l(f, i, *_dic, _unit.get());
 	vt dp;
 	for (auto t = 0; t < (int)l.size(); ++t) {
 		for (auto j = 0; j < l.size(t); ++j) {
 			ynode& cur = l.get(t, j);
 			_precalc(cur);
-			double lp_w = _word->lp(cur.w, _word->h());
+			//double lp_w = _word->lp(cur.w, _word->h());
+			double lp_w = _word->lp(cur.w, _word->h())+(cur.bos+cur.prod+cur.eos)/cur.phonetic.size();
 			for (auto k = 0; k < l.size(t-cur.w.len); ++k) {
 				ynode& prev = l.get(t-cur.w.len, k);
 				dp[t][j].v = math::lse(dp[t][j].v, dp[t-cur.w.len][k].v+lp_w+_transition(prev, cur), !dp[t][j].is_init());
@@ -259,9 +304,9 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 		}
 		diff += _phonetic->lp(cur.phonetic[i],c);
 	}
-	double lp = prev.bos + prev.prod + diff;
+	double lp = /*prev.bos +*/ prev.prod + diff;
 	if ((int)cur.phonetic.size() >= _m) {
-		lp += cur.prod + cur.eos;
+		lp += cur.prod /*+ cur.eos*/;
 	} else {
 		int size = cur.phonetic.size();
 		for (auto i = _m-1; i < size; ++i) {
@@ -280,6 +325,7 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 			}
 			lp += _phonetic->lp(cur.phonetic[i], c);
 		}
+		/* // eos
 		context *e = _phonetic->h();
 		for (auto j = cur.phonetic.size()-1; j > cur.phonetic.size()-_m; --j) {
 			int p = 0;
@@ -294,6 +340,7 @@ double hsmm::_transition(ynode& prev, ynode& cur) {
 			e = h;
 		}
 		lp += _phonetic->lp(0, e);
+		*/
 	}
 	return lp/(prev.phonetic.size()+cur.phonetic.size());
 }

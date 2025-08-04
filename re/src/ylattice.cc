@@ -28,7 +28,7 @@ ynode& ynode::operator=(const ynode& n) {
 	return *this;
 }
 
-ylattice::ylattice(io& f, int i, trie& t) {
+ylattice::ylattice(io& f, int i, trie& t, trie *unit) {
 	int head = f.head[i];
 	int tail = f.head[i+1];
 	for (auto j = head; j < tail; ++j) {
@@ -42,11 +42,25 @@ ylattice::ylattice(io& f, int i, trie& t) {
 		auto r = t.cp_search(key);
 		for (auto& n : r) {
 			word w(*f.raw, head+j, n.first);
-			w.id = d->index(w);
+			w.id = (*d)[w];
 			auto v = t.getval(n.second);
 			if (v) {
 				for (auto& m : v.value()) {
 					y[j+n.first-1].emplace_back(ynode(w, m));
+				}
+			}
+		}
+		// refer unit dic
+		if (unit && y[j].empty()) {
+			auto u = unit->cp_search(key);
+			for (auto& m : u) {
+				word w(*f.raw, head+j, m.first);
+				w.id = d->index(w);
+				auto v = unit->getval(m.second);
+				if (v) {
+					for (auto& l : v.value()) {
+						y[j+m.first-1].emplace_back(ynode(w, l));
+					}
 				}
 			}
 		}
