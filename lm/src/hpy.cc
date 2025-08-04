@@ -138,6 +138,7 @@ bool hpy::remove(sentence& s) {
 			word& b = (*_bc)[s[i]][id];
 			_base->remove(b);
 			(*_bc)[s[i]].erase((*_bc)[s[i]].begin()+id);
+			(*_bc)[s[i]].shrink_to_fit();
 			if ((*_bc)[s[i]].empty())
 				_bc->erase(s[i]);
 		}
@@ -322,6 +323,7 @@ bool hpy::_remove(sentence& s, int i, int n) {
 	if ((*arr.table)[id] == 0) {
 		--rst.table;
 		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
 		if (arr.customer == 0) {
 			rst.arrangements->erase(s[i]);
 			//_nc->erase(s, i, n);
@@ -359,6 +361,7 @@ bool hpy::_remove(word& w, int i, int n) {
 	if ((*arr.table)[id] == 0) {
 		--rst.table;
 		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
 		if (arr.customer == 0) {
 			rst.arrangements->erase(w[i]);
 			//_nc->erase(w, i, n);
@@ -396,6 +399,7 @@ bool hpy::_remove(vector<int>& k, int i, int n) {
 	if ((*arr.table)[id] == 0) {
 		--rst.table;
 		arr.table->erase(arr.table->begin()+id);
+		arr.table->shrink_to_fit();
 		if (arr.customer == 0) {
 			rst.arrangements->erase(key);
 			//_nc->erase(w, i, n);
