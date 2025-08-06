@@ -1,11 +1,16 @@
 #include"chartype.h"
+#include"io.h"
 
 using namespace std;
 using namespace icu;
 using namespace npbnlp;
 
 type chartype::get(unsigned int c) {
-	UnicodeString u((char*)&c, "utf8");
+	char buf[5] = {0};
+	io::i2c(c, buf);
+
+	//UnicodeString u((char*)&c, "utf8");
+	UnicodeString u(buf, "utf8");
 	UChar32 uc = u.char32At(0);
 	
 	UErrorCode err = U_ZERO_ERROR;
